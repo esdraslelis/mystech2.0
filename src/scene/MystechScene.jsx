@@ -1,162 +1,235 @@
-import { Sparkles } from '@react-three/drei'
+import { Html, Sparkles } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
-const PATH = [
-  new THREE.Vector3(-7, 0.55, 9),
-  new THREE.Vector3(-3, 0.55, 2),
-  new THREE.Vector3(1, 0.6, -5),
-  new THREE.Vector3(4, 0.6, -13),
-  new THREE.Vector3(0, 0.7, -21),
-  new THREE.Vector3(-5, 0.7, -29),
-  new THREE.Vector3(-1, 0.7, -38),
-  new THREE.Vector3(5, 0.75, -47),
-  new THREE.Vector3(1, 0.8, -57),
+const PATH_POINTS = [
+  new THREE.Vector3(0, 0.35, 8),
+  new THREE.Vector3(1.8, 0.45, -6),
+  new THREE.Vector3(-1.6, 0.65, -22),
+  new THREE.Vector3(1.4, 0.55, -39),
+  new THREE.Vector3(0, 0.8, -56),
 ]
 
-function terrainGeometry() {
-  const geo = new THREE.PlaneGeometry(48, 82, 90, 150)
-  const pos = geo.attributes.position
+function makeTerrain() {
+  const g = new THREE.PlaneGeometry(58, 86, 100, 150)
+  const pos = g.attributes.position
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i)
     const y = pos.getY(i)
-    const valley = Math.exp(-Math.pow(x / 9, 2))
-    const noise =
-      Math.sin(x * 0.43) * 0.6 +
-      Math.cos(y * 0.2) * 0.52 +
-      Math.sin((x + y) * 0.15) * 0.48
-    const ridge = Math.pow(Math.abs(x) / 20, 2.1) * 6
-    pos.setZ(i, ridge + noise * (1.2 - valley * 0.55))
+    const valley = Math.exp(-Math.pow(x / 8.5, 2))
+    const wave =
+      Math.sin(x * 0.31) * 0.8 +
+      Math.cos(y * 0.19) * 0.72 +
+      Math.sin((x + y) * 0.11) * 0.5
+    const ridge = Math.pow(Math.abs(x) / 22, 2.25) * 8
+    pos.setZ(i, ridge + wave * (1 - valley * 0.55))
   }
-  geo.computeVertexNormals()
-  return geo
+  g.computeVertexNormals()
+  return g
 }
 
 function Terrain() {
-  const geo = useMemo(() => terrainGeometry(), [])
+  const geometry = useMemo(() => makeTerrain(), [])
+  return (
+    <>
+      <mesh geometry={geometry} rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.4, -24]}>
+        <meshStandardMaterial color="#0b1830" roughness={0.88} metalness={0.04} />
+      </mesh>
+      <mesh position={[0, -0.86, -26]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[28, 82]} />
+        <meshPhysicalMaterial color="#061a34" roughness={0.18} metalness={0.15} transparent opacity={0.94} />
+      </mesh>
+    </>
+  )
+}
+
+function Route({ curve }) {
+  const core = useMemo(() => new THREE.TubeGeometry(curve, 240, 0.055, 10, false), [curve])
+  const glow = useMemo(() => new THREE.TubeGeometry(curve, 240, 0.16, 10, false), [curve])
   return (
     <group>
-      <mesh geometry={geo} rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.35, -24]}>
-        <meshStandardMaterial color="#07172d" roughness={0.95} metalness={0.02} />
-      </mesh>
-      <mesh position={[0, -0.95, -24]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[22, 72]} />
-        <meshPhysicalMaterial color="#071b35" roughness={0.28} metalness={0.1} transparent opacity={0.92} />
-      </mesh>
+      <mesh geometry={glow}><meshBasicMaterial color="#063d7d" transparent opacity={0.34} /></mesh>
+      <mesh geometry={core}><meshBasicMaterial color="#48b4ff" /></mesh>
     </group>
   )
 }
 
-function RoadNetwork() {
-  const curves = useMemo(() => {
-    const list = []
-    const base = new THREE.CatmullRomCurve3(PATH, false, 'catmullrom', 0.15)
-    list.push({ curve: base, width: 0.055, color: '#2da1ff', opacity: 1 })
-
-    const sideSets = [
-      [[-6,4],[-8,-5],[-4,-15],[-8,-23],[-3,-32]],
-      [[6,6],[8,-2],[5,-12],[9,-21],[4,-33],[8,-43]],
-      [[-1,4],[4,-3],[-2,-11],[4,-18],[-1,-27],[3,-36],[-2,-46]],
-      [[-9,0],[-6,-8],[-10,-18],[-6,-29],[-9,-40]],
-    ]
-
-    sideSets.forEach((set, idx) => {
-      const pts = set.map(([x,z]) => new THREE.Vector3(x, 0.35 + idx * 0.03, z))
-      list.push({
-        curve: new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.2),
-        width: idx === 2 ? 0.035 : 0.024,
-        color: idx === 2 ? '#3eb4ff' : '#0f69b8',
-        opacity: idx === 2 ? 0.85 : 0.52,
-      })
-    })
-
-    return list
-  }, [])
-
+function Tower({ position, height = 1.2, width = 0.22 }) {
   return (
-    <group>
-      {curves.map((item, index) => {
-        const geo = new THREE.TubeGeometry(item.curve, 180, item.width, 8, false)
-        return (
-          <mesh key={index} geometry={geo}>
-            <meshBasicMaterial color={item.color} transparent opacity={item.opacity} />
-          </mesh>
-        )
-      })}
-    </group>
+    <mesh position={[position[0], height / 2, position[2]]} scale={[width, height, width]}>
+      <boxGeometry />
+      <meshStandardMaterial color="#102c4e" emissive="#0e5da0" emissiveIntensity={0.5} roughness={0.45} />
+    </mesh>
   )
 }
 
-function Node({ position, scale = 1 }) {
-  return (
-    <group position={position} scale={scale}>
-      <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.5, 0.58, 48]} />
-        <meshBasicMaterial color="#62c2ff" transparent opacity={0.95} />
-      </mesh>
-      <mesh position={[0, 0.12, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.1, 32]} />
-        <meshBasicMaterial color="#b6e5ff" />
-      </mesh>
-      <pointLight position={[0, 0.55, 0]} intensity={5.5} distance={4.5} color="#2da1ff" />
-    </group>
-  )
-}
-
-function CityCluster({ position, radius = 2.2, seed = 1 }) {
+function City({ position, seed = 0 }) {
   const towers = useMemo(() => {
-    const out = []
-    for (let i = 0; i < 18; i++) {
-      const a = (i / 18) * Math.PI * 2 + seed
-      const r = 0.45 + ((i * 17) % 10) / 10 * radius
-      const h = 0.45 + ((i * 13) % 11) / 11 * 1.8
-      out.push({
+    return Array.from({ length: 24 }, (_, i) => {
+      const a = (i / 24) * Math.PI * 2 + seed
+      const r = 0.7 + ((i * 13) % 11) * 0.17
+      return {
         x: Math.cos(a) * r,
         z: Math.sin(a) * r,
-        h,
-        w: 0.12 + ((i * 7) % 5) * 0.035,
-      })
-    }
-    return out
-  }, [radius, seed])
+        h: 0.35 + ((i * 17) % 12) * 0.16,
+        w: 0.12 + ((i * 5) % 4) * 0.025,
+      }
+    })
+  }, [seed])
 
   return (
     <group position={position}>
-      {towers.map((t, i) => (
-        <mesh key={i} position={[t.x, t.h / 2, t.z]} scale={[t.w, t.h, t.w]}>
-          <boxGeometry />
-          <meshStandardMaterial color="#0b294c" emissive="#0c6dc2" emissiveIntensity={0.55} roughness={0.48} />
-        </mesh>
-      ))}
-      <Node position={[0, 0.04, 0]} scale={0.82} />
+      {towers.map((t, i) => <Tower key={i} position={[t.x, 0, t.z]} height={t.h} width={t.w} />)}
+      <mesh position={[0, 0.045, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[2.2, 2.3, 64]} />
+        <meshBasicMaterial color="#2c9df0" transparent opacity={0.75} />
+      </mesh>
+      <pointLight position={[0, 1.2, 0]} intensity={12} distance={8} color="#2b9cff" />
     </group>
   )
 }
 
-function Landmarks() {
+function WorldPanel({ active, position, side = 'right', title, eyebrow, children }) {
   return (
-    <group>
-      <CityCluster position={[-2.2, 0.05, -4]} radius={1.8} seed={1.2} />
-      <CityCluster position={[4.2, 0.05, -15]} radius={2.1} seed={2.4} />
-      <CityCluster position={[-4.8, 0.05, -27]} radius={2.0} seed={3.1} />
-      <CityCluster position={[3.2, 0.05, -42]} radius={2.3} seed={4.2} />
-      <CityCluster position={[0.4, 0.05, -55]} radius={2.2} seed={5.3} />
-
-      <Node position={[-2.2, 0.06, -4]} />
-      <Node position={[4.2, 0.06, -15]} />
-      <Node position={[-4.8, 0.06, -27]} />
-      <Node position={[3.2, 0.06, -42]} />
-      <Node position={[0.4, 0.06, -55]} />
+    <group position={position}>
+      <Html
+        transform
+        distanceFactor={6.2}
+        position={[side === 'right' ? 2.8 : -2.8, 2.0, 0]}
+        style={{
+          width: '340px',
+          pointerEvents: active ? 'auto' : 'none',
+          opacity: active ? 1 : 0,
+          transform: `translate3d(0,${active ? 0 : 18}px,0)`,
+          transition: 'opacity .55s ease, transform .55s ease',
+        }}
+      >
+        <div className="world-panel">
+          <small>{eyebrow}</small>
+          <h2>{title}</h2>
+          {children}
+        </div>
+      </Html>
     </group>
   )
 }
 
-export default function MystechScene() {
+function WebArea({ active }) {
+  return (
+    <group position={[1.8, 0, -8]}>
+      <City position={[0, 0, 0]} seed={0.8} />
+      <mesh position={[0, 1.7, 0]}>
+        <torusGeometry args={[2.3, 0.12, 16, 80]} />
+        <meshStandardMaterial color="#123d70" emissive="#2a8de6" emissiveIntensity={0.75} />
+      </mesh>
+      <WorldPanel active={active} position={[0,0,0]} title="Web District" eyebrow="02 / WEBSITES">
+        <p>Sites institucionais, landing pages e experiências interativas.</p>
+        <div className="world-list">
+          <span>UI/UX estratégico</span>
+          <span>SEO e performance</span>
+          <span>Motion e 3D</span>
+          <span>Responsivo</span>
+        </div>
+      </WorldPanel>
+    </group>
+  )
+}
+
+function SystemsArea({ active }) {
+  return (
+    <group position={[-1.6, 0, -24]}>
+      <City position={[0,0,0]} seed={2.1} />
+      <mesh position={[0, 2.0, 0]}>
+        <sphereGeometry args={[1.15, 40, 40]} />
+        <meshPhysicalMaterial color="#0b2040" metalness={0.55} roughness={0.2} />
+      </mesh>
+      <mesh position={[0, 2.0, 0]} scale={1.55}>
+        <icosahedronGeometry args={[1, 1]} />
+        <meshBasicMaterial color="#45a9ff" wireframe transparent opacity={0.5} />
+      </mesh>
+      <WorldPanel active={active} position={[0,0,0]} side="left" title="AI Core" eyebrow="03 / SISTEMAS + IA">
+        <p>Sistemas personalizados para operação, gestão e tomada de decisão.</p>
+        <div className="world-list">
+          <span>Dashboards em tempo real</span>
+          <span>Automação de processos</span>
+          <span>Assistentes com IA</span>
+          <span>Integrações via API</span>
+        </div>
+      </WorldPanel>
+    </group>
+  )
+}
+
+function ProjectsArea({ active }) {
+  const projects = [
+    ['Website Institucional', 'Identidade, experiência, SEO e conversão.'],
+    ['Sistema Operacional', 'Fluxos, indicadores e gestão em tempo real.'],
+    ['Automação com IA', 'Análise, atendimento e processos inteligentes.'],
+  ]
+
+  return (
+    <group position={[1.4, 0, -41]}>
+      <City position={[0,0,0]} seed={3.4} />
+      <WorldPanel active={active} position={[0,0,0]} title="Project Valley" eyebrow="04 / PROJETOS">
+        <p>Projetos construídos para problemas reais.</p>
+        <div className="project-world-list">
+          {projects.map(([name, desc], i) => (
+            <article key={name}>
+              <b>0{i + 1}</b>
+              <div><strong>{name}</strong><span>{desc}</span></div>
+            </article>
+          ))}
+        </div>
+      </WorldPanel>
+    </group>
+  )
+}
+
+function ContactArea({ active }) {
+  return (
+    <group position={[0, 0, -58]}>
+      <City position={[0,0,0]} seed={4.7} />
+      <mesh position={[0, 3.0, 0]}>
+        <cylinderGeometry args={[0.45, 1.4, 5.4, 12]} />
+        <meshStandardMaterial color="#0b2b50" roughness={0.38} metalness={0.25} />
+      </mesh>
+      <mesh position={[0, 6.0, 0]}>
+        <sphereGeometry args={[0.55, 32, 32]} />
+        <meshPhysicalMaterial color="#8fd4ff" emissive="#2a9dff" emissiveIntensity={2.5} />
+      </mesh>
+      <WorldPanel active={active} position={[0,0,0]} side="left" title="Launch Point" eyebrow="05 / CONTATO">
+        <p>Seu próximo projeto começa daqui.</p>
+        <a className="world-cta" href="https://wa.me/5535997541933" target="_blank" rel="noreferrer">INICIAR PROJETO ↗</a>
+      </WorldPanel>
+    </group>
+  )
+}
+
+function Player({ curve, progress }) {
+  const ref = useRef()
+  useFrame((state) => {
+    if (!ref.current) return
+    const pos = curve.getPointAt(progress.current)
+    ref.current.position.copy(pos)
+    ref.current.position.y += 0.45 + Math.sin(state.clock.elapsedTime * 4) * 0.04
+  })
+  return (
+    <group ref={ref}>
+      <mesh>
+        <sphereGeometry args={[0.19, 24, 24]} />
+        <meshPhysicalMaterial color="#dff5ff" emissive="#4ab7ff" emissiveIntensity={2.4} />
+      </mesh>
+      <pointLight intensity={6} distance={4} color="#43aaff" />
+    </group>
+  )
+}
+
+export default function MystechScene({ activeZone }) {
   const { camera, scene, pointer } = useThree()
   const scroll = useRef(0)
   const smooth = useRef(0)
-  const route = useMemo(() => new THREE.CatmullRomCurve3(PATH, false, 'catmullrom', 0.15), [])
+  const curve = useMemo(() => new THREE.CatmullRomCurve3(PATH_POINTS, false, 'catmullrom', 0.12), [])
 
   useEffect(() => {
     const update = () => {
@@ -169,38 +242,44 @@ export default function MystechScene() {
   }, [])
 
   useFrame(() => {
-    smooth.current = THREE.MathUtils.lerp(smooth.current, scroll.current, 0.055)
+    smooth.current = THREE.MathUtils.lerp(smooth.current, scroll.current, 0.07)
     const p = smooth.current
-    const focus = route.getPointAt(p)
-    const tangent = route.getTangentAt(Math.min(0.998, p + 0.002)).normalize()
-    const right = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize()
+    const pos = curve.getPointAt(p)
+    const tangent = curve.getTangentAt(Math.min(0.998, p + 0.002)).normalize()
+    const right = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0,1,0)).normalize()
 
-    const desired = focus.clone()
-      .add(tangent.clone().multiplyScalar(-8.6))
-      .add(new THREE.Vector3(0, 7.3, 0))
-      .add(right.multiplyScalar(5.8 + pointer.x * 0.9))
+    const desired = pos.clone()
+      .add(tangent.clone().multiplyScalar(-7.8))
+      .add(new THREE.Vector3(0, 4.5, 0))
+      .add(right.multiplyScalar(pointer.x * 1.25))
 
-    const target = focus.clone()
-      .add(tangent.clone().multiplyScalar(3.8))
-      .add(new THREE.Vector3(0, 0.8 + pointer.y * 0.3, 0))
+    const target = pos.clone()
+      .add(tangent.clone().multiplyScalar(4.8))
+      .add(new THREE.Vector3(0, 1.05 + pointer.y * 0.3, 0))
 
-    camera.position.lerp(desired, 0.065)
+    camera.position.lerp(desired, 0.085)
     camera.lookAt(target)
-    scene.background = new THREE.Color('#031027')
+    scene.background = new THREE.Color('#071226')
   })
 
   return (
     <>
-      <fog attach="fog" args={['#031027', 20, 48]} />
-      <ambientLight intensity={0.55} />
-      <hemisphereLight intensity={0.72} color="#58a8ff" groundColor="#020716" />
-      <directionalLight position={[10, 16, 8]} intensity={1.7} color="#d4e8ff" />
-      <pointLight position={[0, 9, -20]} intensity={22} distance={26} color="#0c65d8" />
+      <fog attach="fog" args={['#071226', 16, 46]} />
+      <ambientLight intensity={0.52} />
+      <hemisphereLight intensity={0.72} color="#6db7ff" groundColor="#030814" />
+      <directionalLight position={[8, 14, 8]} intensity={1.55} color="#d7eaff" />
 
       <Terrain />
-      <RoadNetwork />
-      <Landmarks />
-      <Sparkles count={180} scale={[42, 18, 88]} size={1.1} speed={0.12} opacity={0.28} color="#70baff" />
+      <Route curve={curve} />
+
+      <City position={[0,0,5]} seed={0.2} />
+      <WebArea active={activeZone === 1} />
+      <SystemsArea active={activeZone === 2} />
+      <ProjectsArea active={activeZone === 3} />
+      <ContactArea active={activeZone === 4} />
+      <Player curve={curve} progress={smooth} />
+
+      <Sparkles count={150} scale={[44, 16, 86]} size={1.15} speed={0.14} opacity={0.3} color="#71bfff" />
     </>
   )
 }
