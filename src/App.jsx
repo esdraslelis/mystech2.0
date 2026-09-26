@@ -5,46 +5,44 @@ import MystechScene from './scene/MystechScene'
 
 const chapters = [
   {
+    id: 'institucional',
     number: '01',
-    label: 'MYS TECH',
-    title: <>Sites com <em>presença.</em></>,
-    body: 'Design, tecnologia e movimento em uma experiência digital feita para ser lembrada.',
+    label: 'INSTITUCIONAL',
+    title: <>Tecnologia com <em>forma.</em></>,
+    body: 'Criamos experiências digitais claras, rápidas e memoráveis.',
     theme: 'light',
   },
   {
+    id: 'websites',
     number: '02',
-    label: 'ESTRATÉGIA',
-    title: <>Primeiro, o <em>caminho.</em></>,
-    body: 'Entendemos sua marca, sua proposta e o que o site precisa fazer.',
+    label: 'WEBSITES',
+    title: <>Sites que <em>respondem.</em></>,
+    body: 'Interfaces vivas, responsivas e pensadas para conduzir cada clique.',
     theme: 'light',
   },
   {
+    id: 'sistemas',
     number: '03',
-    label: 'DESIGN',
-    title: <>Depois, a <em>forma.</em></>,
-    body: 'Criamos uma interface limpa, exclusiva e pensada para conduzir.',
+    label: 'SISTEMAS',
+    title: <>Sistemas que <em>pensam junto.</em></>,
+    body: 'Dashboards, automações e IA aplicados ao dia a dia da operação.',
     theme: 'dark',
   },
   {
+    id: 'projetos',
     number: '04',
-    label: 'DESENVOLVIMENTO',
-    title: <>Então, tudo <em>ganha vida.</em></>,
-    body: 'Interações, 3D, responsividade e performance trabalhando como uma só experiência.',
+    label: 'PROJETOS',
+    title: <>Projetos com <em>propósito.</em></>,
+    body: 'Cada interface nasce de um problema real e termina em uma experiência simples.',
     theme: 'dark',
   },
   {
+    id: 'contato',
     number: '05',
-    label: 'ENTREGA',
-    title: <>Pronto para <em>existir.</em></>,
-    body: 'Publicação, SEO, velocidade e estrutura preparada para crescer.',
+    label: 'CONTATO',
+    title: <>Vamos criar <em>o próximo.</em></>,
+    body: 'Conte o que você precisa. A gente transforma em experiência digital.',
     theme: 'light',
-  },
-  {
-    number: '06',
-    label: 'MYS TECH',
-    title: <>Seu próximo site <em>começa aqui.</em></>,
-    body: 'Sites institucionais e experiências digitais desenvolvidos do zero.',
-    theme: 'dark',
   },
 ]
 
@@ -53,7 +51,7 @@ export default function App() {
   const [activeChapter, setActiveChapter] = useState(0)
 
   useEffect(() => {
-    const lenis = new Lenis({ duration: 1.15, smoothWheel: true, syncTouch: false })
+    const lenis = new Lenis({ duration: 1.08, smoothWheel: true, syncTouch: false })
     let frame
     const raf = (time) => {
       lenis.raf(time)
@@ -79,7 +77,7 @@ export default function App() {
         setActiveChapter(index)
         setActiveTheme(chapters[index].theme)
       },
-      { threshold: [0.35, 0.5, 0.65] }
+      { threshold: [0.38, 0.52, 0.68] }
     )
 
     sections.forEach((section) => observer.observe(section))
@@ -89,38 +87,45 @@ export default function App() {
   return (
     <main className="site-shell" data-theme={activeTheme}>
       <header className="nav">
-        <a className="brand" href="#top">
-          <span className="brand-mark">M</span>
+        <a className="brand" href="#institucional" aria-label="Mys Tech">
+          <span className="brand-symbol"><span /></span>
           <span>MYS TECH</span>
         </a>
 
-        <div className="nav-center">
+        <nav className="nav-menu" aria-label="Principal">
+          <a href="#institucional">Institucional</a>
+          <a href="#websites">Websites</a>
+          <a href="#sistemas">Sistemas</a>
+          <a href="#projetos">Projetos</a>
+          <a href="#contato">Contato</a>
+        </nav>
+
+        <div className="nav-status">
           <span>{chapters[activeChapter].number}</span>
           <span>{chapters[activeChapter].label}</span>
         </div>
-
-        <a className="nav-contact" href="#contact">CONTATO ↗</a>
       </header>
 
-      <div className="map-stage" aria-hidden="true">
+      <div className="map-stage">
         <Canvas
-          dpr={[1, 1.6]}
-          camera={{ position: [7.8, 7.2, 13.5], fov: 34 }}
+          dpr={[1, 1.65]}
+          camera={{ position: [7.6, 6.7, 13.2], fov: 34 }}
           gl={{ antialias: true, alpha: false }}
         >
           <Suspense fallback={null}>
-            <MystechScene theme={activeTheme} />
+            <MystechScene theme={activeTheme} activeChapter={activeChapter} />
           </Suspense>
         </Canvas>
       </div>
 
-      <div id="top" className="story">
+      <div className="story">
         {chapters.map((chapter, index) => (
           <section
+            id={chapter.id}
             className={`chapter chapter-${index}`}
             data-chapter={index}
             data-theme={chapter.theme}
-            key={chapter.number}
+            key={chapter.id}
           >
             <div className="chapter-copy">
               <div className="chapter-meta">
@@ -132,22 +137,32 @@ export default function App() {
               <p>{chapter.body}</p>
 
               {index === 0 && (
-                <div className="scroll-note">
-                  <span />
-                  ROLE PARA NAVEGAR
-                </div>
+                <>
+                  <div className="hero-tags">
+                    <span>Websites</span>
+                    <span>Sistemas</span>
+                    <span>IA</span>
+                    <span>3D</span>
+                  </div>
+                  <div className="scroll-note">
+                    <span />
+                    ROLE PARA EXPLORAR
+                  </div>
+                </>
               )}
 
-              {index === chapters.length - 1 && (
-                <a
-                  id="contact"
-                  className="project-link"
-                  href="https://wa.me/5535997541933"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  CRIAR MEU SITE <span>↗</span>
-                </a>
+              {chapter.id === 'contato' && (
+                <div className="contact-actions">
+                  <a
+                    className="project-link"
+                    href="https://wa.me/5535997541933"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    FALAR NO WHATSAPP <span>↗</span>
+                  </a>
+                  <a className="text-link" href="mailto:contato@mystech.com.br">contato@mystech.com.br</a>
+                </div>
               )}
             </div>
           </section>
