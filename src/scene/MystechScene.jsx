@@ -1,23 +1,22 @@
+import { Html } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
 const STOPS = [
-  { camera: [7.8, 7.2, 13.5], target: [0, 0.6, -1.5] },
-  { camera: [-5.8, 5.6, 2.2], target: [-1.4, 0.7, -11.5] },
-  { camera: [5.4, 4.7, -10.8], target: [1.6, 0.9, -23.6] },
-  { camera: [-4.6, 4.0, -22.6], target: [-1.0, 1.0, -35.4] },
-  { camera: [4.4, 5.3, -35.2], target: [1.2, 0.7, -47.6] },
-  { camera: [0.2, 6.4, -49.5], target: [0, 0.8, -60] },
+  { camera: [7.6, 6.7, 13.2], target: [0, 1.2, -2] },
+  { camera: [-5.4, 5.0, 1.4], target: [-1.3, 1.3, -14] },
+  { camera: [5.0, 4.4, -12.8], target: [1.5, 1.25, -26] },
+  { camera: [-4.6, 4.0, -26.8], target: [-1.0, 1.25, -38] },
+  { camera: [0.7, 5.0, -41.8], target: [0, 1.1, -51] },
 ]
 
 const DISTRICTS = [
   { z: 0, x: 0 },
-  { z: -12, x: -1.4 },
-  { z: -24, x: 1.6 },
-  { z: -36, x: -1.0 },
-  { z: -48, x: 1.2 },
-  { z: -60, x: 0 },
+  { z: -12.5, x: -1.3 },
+  { z: -25, x: 1.5 },
+  { z: -37.5, x: -1.0 },
+  { z: -50, x: 0 },
 ]
 
 function seeded(n) {
@@ -38,22 +37,18 @@ function City({ darkMix }) {
           const c = seeded(id + 233)
           const reserved = Math.abs(row) <= 1 && Math.abs(col) <= 1
 
-          if (reserved || a < 0.18) {
+          if (reserved || a < 0.2) {
             id++
             continue
           }
-
-          const width = 0.48 + b * 0.95
-          const depth = 0.48 + c * 0.95
-          const height = 0.18 + Math.pow(a, 2) * 2.5
 
           items.push({
             key: `${districtIndex}-${row}-${col}`,
             x: district.x + col * 1.7,
             z: district.z + row * 1.48,
-            width,
-            depth,
-            height,
+            width: 0.48 + b * 0.95,
+            depth: 0.48 + c * 0.95,
+            height: 0.18 + Math.pow(a, 2) * 2.4,
           })
           id++
         }
@@ -63,9 +58,7 @@ function City({ darkMix }) {
     return items
   }, [])
 
-  const light = new THREE.Color('#f8f7f3')
-  const dark = new THREE.Color('#202020')
-  const color = light.clone().lerp(dark, darkMix)
+  const color = new THREE.Color('#f8f7f3').lerp(new THREE.Color('#1e1e1e'), darkMix)
 
   return (
     <group>
@@ -76,7 +69,7 @@ function City({ darkMix }) {
           scale={[block.width, block.height, block.depth]}
         >
           <boxGeometry />
-          <meshStandardMaterial color={color} roughness={0.88} metalness={0.01} />
+          <meshStandardMaterial color={color} roughness={0.88} />
         </mesh>
       ))}
     </group>
@@ -84,14 +77,12 @@ function City({ darkMix }) {
 }
 
 function Paths({ darkMix }) {
-  const light = new THREE.Color('#d8d7d1')
-  const dark = new THREE.Color('#323232')
-  const color = light.clone().lerp(dark, darkMix)
+  const color = new THREE.Color('#d8d7d1').lerp(new THREE.Color('#303030'), darkMix)
 
   return (
     <group>
-      <mesh position={[0, 0.012, -30]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[2.7, 73]} />
+      <mesh position={[0, 0.012, -25]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[2.7, 64]} />
         <meshStandardMaterial color={color} roughness={1} />
       </mesh>
 
@@ -105,52 +96,141 @@ function Paths({ darkMix }) {
   )
 }
 
-function Portal({ position, darkMix, scale = 1 }) {
-  const frameLight = new THREE.Color('#ffffff')
-  const frameDark = new THREE.Color('#111111')
-  const panelLight = new THREE.Color('#f2f1ec')
-  const panelDark = new THREE.Color('#292929')
+function InstitutionalScreen() {
+  return (
+    <div className="screen-ui screen-institutional">
+      <div className="screen-top"><b>MYS TECH</b><span>Digital Studio</span></div>
+      <div className="screen-hero">
+        <small>DESIGN + TECNOLOGIA</small>
+        <h3>Experiências digitais que fazem sentido.</h3>
+        <p>Sites, sistemas e automações criados para transformar operação e percepção de marca.</p>
+      </div>
+      <div className="screen-footer"><span>Websites</span><span>Sistemas</span><span>IA</span></div>
+    </div>
+  )
+}
+
+function WebsiteScreen() {
+  return (
+    <div className="screen-ui screen-website">
+      <div className="website-bar"><b>MYS / WEB</b><span>Projeto 01</span><i>↗</i></div>
+      <div className="website-layout">
+        <div>
+          <small>EXPERIÊNCIA DIGITAL</small>
+          <h3>Um site que reage ao usuário.</h3>
+          <p>Movimento, profundidade e conteúdo trabalhando juntos.</p>
+          <button>Explorar projeto</button>
+        </div>
+        <div className="website-card">
+          <span>INTERACTIVE</span>
+          <strong>01</strong>
+          <div className="website-orbit" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SystemScreen() {
+  return (
+    <div className="screen-ui screen-system">
+      <div className="system-sidebar">
+        <b>MY SYSTEM</b>
+        <span className="active">Visão geral</span>
+        <span>Operação</span>
+        <span>Clientes</span>
+        <span>IA</span>
+      </div>
+      <div className="system-main">
+        <div className="system-head"><div><small>ASSISTENTE OPERACIONAL</small><h3>O que precisa de atenção hoje?</h3></div><i>● online</i></div>
+        <div className="ai-box">
+          <div className="ai-user">Mostre os pontos críticos da operação.</div>
+          <div className="ai-answer">
+            <b>3 pontos merecem atenção</b>
+            <span>• SLA acima do normal em duas regiões</span>
+            <span>• 14 chamados concentrados no mesmo setor</span>
+            <span>• Tendência de aumento no tempo médio</span>
+          </div>
+        </div>
+        <div className="mini-kpis"><span><b>97.8%</b> SLA</span><span><b>24h</b> suporte</span><span><b>4.85</b> nota</span></div>
+      </div>
+    </div>
+  )
+}
+
+function ProjectsScreen() {
+  return (
+    <div className="screen-ui screen-projects">
+      <div className="projects-head"><small>PROJETOS SELECIONADOS</small><b>Construímos para diferentes contextos.</b></div>
+      <div className="project-grid">
+        <article><span>01</span><h4>Website institucional</h4><p>Marca, conteúdo e presença digital.</p></article>
+        <article><span>02</span><h4>Sistema operacional</h4><p>Dados, fluxos e gestão em tempo real.</p></article>
+        <article><span>03</span><h4>Automação com IA</h4><p>Atendimento e análise conectados.</p></article>
+      </div>
+    </div>
+  )
+}
+
+function ContactScreen() {
+  return (
+    <div className="screen-ui screen-contact">
+      <small>PRÓXIMO PROJETO</small>
+      <h3>Conte a ideia.<br/>A gente constrói.</h3>
+      <div className="contact-row"><span>WhatsApp</span><b>(35) 9 9754-1933 ↗</b></div>
+      <div className="contact-row"><span>E-mail</span><b>contato@mystech.com.br ↗</b></div>
+    </div>
+  )
+}
+
+const screenContent = [
+  <InstitutionalScreen key="inst" />,
+  <WebsiteScreen key="web" />,
+  <SystemScreen key="sys" />,
+  <ProjectsScreen key="proj" />,
+  <ContactScreen key="contact" />,
+]
+
+function Portal({ position, darkMix, index, scale = 1 }) {
+  const frame = new THREE.Color('#ffffff').lerp(new THREE.Color('#111111'), darkMix)
 
   return (
     <group position={position} scale={scale}>
       <mesh position={[0, 2.05, 0]}>
-        <boxGeometry args={[5.2, 3.1, 0.08]} />
-        <meshStandardMaterial color={frameLight.clone().lerp(frameDark, darkMix)} roughness={0.42} />
+        <boxGeometry args={[5.65, 3.45, 0.1]} />
+        <meshStandardMaterial color={frame} roughness={0.35} />
       </mesh>
 
-      <mesh position={[0, 2.05, 0.05]}>
-        <planeGeometry args={[4.7, 2.6]} />
-        <meshBasicMaterial color={panelLight.clone().lerp(panelDark, darkMix)} />
-      </mesh>
-
-      <mesh position={[-1.58, 2.84, 0.085]}>
-        <boxGeometry args={[1.05, 0.055, 0.03]} />
-        <meshBasicMaterial color={darkMix > 0.5 ? '#f2f2ef' : '#171717'} />
-      </mesh>
+      <Html
+        transform
+        center
+        position={[0, 2.05, 0.065]}
+        distanceFactor={1.05}
+        style={{ width: '640px', height: '390px', pointerEvents: 'auto' }}
+      >
+        {screenContent[index]}
+      </Html>
     </group>
   )
 }
 
 function SceneContent({ darkMix }) {
-  const groundLight = new THREE.Color('#ecebe6')
-  const groundDark = new THREE.Color('#141414')
-  const ground = groundLight.clone().lerp(groundDark, darkMix)
+  const ground = new THREE.Color('#ecebe6').lerp(new THREE.Color('#141414'), darkMix)
 
   return (
     <>
-      <mesh position={[0, -0.05, -30]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[34, 78]} />
+      <mesh position={[0, -0.05, -25]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[34, 66]} />
         <meshStandardMaterial color={ground} roughness={1} />
       </mesh>
 
       <Paths darkMix={darkMix} />
       <City darkMix={darkMix} />
 
-      <Portal position={[0, 0, -5.5]} darkMix={darkMix} />
-      <Portal position={[-1.4, 0, -17.4]} darkMix={darkMix} scale={0.95} />
-      <Portal position={[1.6, 0, -29.4]} darkMix={darkMix} scale={1.02} />
-      <Portal position={[-1, 0, -41.4]} darkMix={darkMix} scale={0.97} />
-      <Portal position={[1.2, 0, -53.4]} darkMix={darkMix} scale={1.03} />
+      <Portal position={[0, 0, -5.6]} darkMix={darkMix} index={0} />
+      <Portal position={[-1.3, 0, -18.1]} darkMix={darkMix} index={1} scale={0.98} />
+      <Portal position={[1.5, 0, -30.6]} darkMix={darkMix} index={2} scale={1.03} />
+      <Portal position={[-1, 0, -43.1]} darkMix={darkMix} index={3} />
+      <Portal position={[0, 0, -55.6]} darkMix={darkMix} index={4} scale={1.02} />
     </>
   )
 }
@@ -173,8 +253,8 @@ export default function MystechScene({ theme }) {
   }, [])
 
   useFrame(() => {
-    smoothProgress.current = THREE.MathUtils.lerp(smoothProgress.current, progress.current, 0.075)
-    darkMix.current = THREE.MathUtils.lerp(darkMix.current, theme === 'dark' ? 1 : 0, 0.06)
+    smoothProgress.current = THREE.MathUtils.lerp(smoothProgress.current, progress.current, 0.072)
+    darkMix.current = THREE.MathUtils.lerp(darkMix.current, theme === 'dark' ? 1 : 0, 0.055)
 
     const p = smoothProgress.current * (STOPS.length - 1)
     const current = Math.min(Math.floor(p), STOPS.length - 2)
@@ -182,32 +262,23 @@ export default function MystechScene({ theme }) {
 
     const from = STOPS[current]
     const to = STOPS[current + 1]
-
     const cameraPosition = new THREE.Vector3(...from.camera).lerp(new THREE.Vector3(...to.camera), local)
     const target = new THREE.Vector3(...from.target).lerp(new THREE.Vector3(...to.target), local)
 
-    camera.position.lerp(cameraPosition, 0.12)
+    camera.position.lerp(cameraPosition, 0.11)
     camera.lookAt(target)
 
-    const bgLight = new THREE.Color('#ecebe6')
-    const bgDark = new THREE.Color('#111111')
-    const background = bgLight.clone().lerp(bgDark, darkMix.current)
-
+    const background = new THREE.Color('#ecebe6').lerp(new THREE.Color('#111111'), darkMix.current)
     scene.background = background
-    if (scene.fog) {
-      scene.fog.color.copy(background)
-    }
+    if (scene.fog) scene.fog.color.copy(background)
   })
-
-  const fogColor = theme === 'dark' ? '#111111' : '#ecebe6'
 
   return (
     <>
-      <fog attach="fog" args={[fogColor, 14, 31]} />
+      <fog attach="fog" args={[theme === 'dark' ? '#111111' : '#ecebe6', 14, 31]} />
       <ambientLight intensity={theme === 'dark' ? 1.3 : 2.1} />
       <directionalLight position={[8, 14, 10]} intensity={theme === 'dark' ? 1.5 : 2.0} />
       <directionalLight position={[-7, 8, -6]} intensity={0.55} />
-
       <SceneContent darkMix={darkMix.current} />
     </>
   )
