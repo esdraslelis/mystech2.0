@@ -3,67 +3,119 @@ import { Suspense, useEffect } from 'react'
 import Lenis from 'lenis'
 import MystechScene from './scene/MystechScene'
 
-const sections = [
-  { eyebrow: 'MYS TECH / DIGITAL STUDIO', title: <>Sites que <span>invadem a tela.</span></>, body: 'Experiências digitais com profundidade, movimento e tecnologia para transformar atenção em percepção de marca.' },
-  { eyebrow: '01 / EXPERIÊNCIA', title: <>Não é uma página. <span>É uma cena.</span></>, body: 'Cada scroll move câmera, luz, profundidade e narrativa. O conteúdo deixa de ser bloco e passa a fazer parte do ambiente.' },
-  { eyebrow: '02 / ESTRUTURA', title: <>Design, código e movimento <span>na mesma arquitetura.</span></>, body: 'UI, performance, SEO, responsividade, automação e interação trabalhando como camadas de um mesmo produto.' },
-  { eyebrow: '03 / PORTFÓLIO', title: <>Projetos que merecem <span>ser explorados.</span></>, body: 'O portfólio entra como parte do cenário, com telas, objetos e transições que respondem ao movimento do usuário.' },
-  { eyebrow: '04 / RESPONSIVO', title: <>Uma experiência. <span>Qualquer tela.</span></>, body: 'Desktop, notebook, tablet e mobile tratados como parte da experiência — sem sacrificar impacto ou fluidez.' },
-  { eyebrow: '05 / MYS TECH', title: <>Seu próximo site pode <span>parecer impossível.</span></>, body: 'Sites institucionais, landing pages e experiências digitais premium construídas para não parecerem genéricas.' },
+const chapters = [
+  {
+    number: '00',
+    kicker: 'MYS TECH — DIGITAL STUDIO',
+    title: <>Criamos sites que <em>viram espaço.</em></>,
+    body: 'Uma experiência contínua, limpa e tridimensional. Role para atravessar o projeto.',
+  },
+  {
+    number: '01',
+    kicker: 'ESTRATÉGIA',
+    title: <>Tudo começa pelo <em>território.</em></>,
+    body: 'Marca, público e objetivo definem a arquitetura. Antes da interface, desenhamos o caminho.',
+  },
+  {
+    number: '02',
+    kicker: 'DESIGN',
+    title: <>Uma tela nasce <em>dentro da outra.</em></>,
+    body: 'O conteúdo não troca de seção. Ele se transforma, encaixa e continua no próximo capítulo.',
+  },
+  {
+    number: '03',
+    kicker: 'DESENVOLVIMENTO',
+    title: <>Interface com <em>profundidade real.</em></>,
+    body: 'WebGL, motion e performance trabalhando juntos — sem excesso visual e sem cara de template.',
+  },
+  {
+    number: '04',
+    kicker: 'ENTREGA',
+    title: <>Do mapa ao <em>site publicado.</em></>,
+    body: 'Responsivo, rápido, otimizado para busca e preparado para crescer junto com a empresa.',
+  },
+  {
+    number: '05',
+    kicker: 'MYS TECH',
+    title: <>Vamos construir seu <em>próximo espaço digital.</em></>,
+    body: 'Sites institucionais e experiências digitais premium desenvolvidos do zero.',
+  },
 ]
 
 export default function App() {
   useEffect(() => {
-    const lenis = new Lenis({ duration: 1.15, smoothWheel: true })
-    let rafId
+    const lenis = new Lenis({ duration: 1.25, smoothWheel: true, syncTouch: false })
+    let frame
     const raf = (time) => {
       lenis.raf(time)
-      rafId = requestAnimationFrame(raf)
+      frame = requestAnimationFrame(raf)
     }
-    rafId = requestAnimationFrame(raf)
+    frame = requestAnimationFrame(raf)
     return () => {
-      cancelAnimationFrame(rafId)
+      cancelAnimationFrame(frame)
       lenis.destroy()
     }
   }, [])
 
   return (
-    <main>
-      <div className="grain" />
+    <main className="site-shell">
       <header className="nav">
-        <a className="brand" href="#top" aria-label="Mys Tech">
-          <span className="brand-mark">M</span>
+        <a className="brand" href="#top">
+          <span className="brand-dot" />
           <span>MYS TECH</span>
         </a>
-        <div className="nav-meta">
-          <span>WEB / 3D / INTERACTION</span>
-          <a href="#contact">INICIAR PROJETO ↗</a>
+        <div className="nav-right">
+          <span>WEB DESIGN & DEVELOPMENT</span>
+          <a href="#contact">FALE COM A GENTE ↗</a>
         </div>
       </header>
 
-      <div className="scene-wrap" aria-hidden="true">
-        <Canvas dpr={[1, 1.75]} camera={{ position: [0, 0, 8], fov: 42 }} gl={{ antialias: true, alpha: true }}>
+      <div className="map-stage" aria-hidden="true">
+        <Canvas
+          dpr={[1, 1.6]}
+          camera={{ position: [8.5, 9.5, 15], fov: 36 }}
+          gl={{ antialias: true, alpha: true }}
+        >
           <Suspense fallback={null}>
             <MystechScene />
           </Suspense>
         </Canvas>
       </div>
 
-      <div id="top" className="scroll-story">
-        {sections.map((section, index) => (
-          <section className={`story-section s-${index + 1}`} data-scene={index} key={section.eyebrow}>
-            <div className="copy">
-              <p className="eyebrow">{section.eyebrow}</p>
-              <h1>{section.title}</h1>
-              <p className="body">{section.body}</p>
-              {index === 0 && <div className="scroll-hint"><i /> SCROLL TO ENTER</div>}
-              {index === sections.length - 1 && (
-                <a id="contact" className="cta" href="https://wa.me/5535997541933" target="_blank" rel="noreferrer">
-                  CRIAR MEU PROJETO <b>↗</b>
+      <div id="top" className="story">
+        {chapters.map((chapter, index) => (
+          <section className={`chapter chapter-${index}`} key={chapter.number}>
+            <div className="chapter-copy">
+              <div className="chapter-meta">
+                <span>{chapter.number}</span>
+                <span>{chapter.kicker}</span>
+              </div>
+              <h1>{chapter.title}</h1>
+              <p>{chapter.body}</p>
+
+              {index === 0 && (
+                <div className="scroll-note">
+                  <span className="scroll-line" />
+                  SCROLL TO EXPLORE
+                </div>
+              )}
+
+              {index === chapters.length - 1 && (
+                <a
+                  id="contact"
+                  className="project-link"
+                  href="https://wa.me/5535997541933"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  INICIAR UM PROJETO <span>↗</span>
                 </a>
               )}
             </div>
-            <div className="chapter">{String(index + 1).padStart(2, '0')}</div>
+
+            <div className="chapter-index">
+              {String(index + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}
+            </div>
           </section>
         ))}
       </div>
