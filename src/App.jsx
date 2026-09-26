@@ -1,50 +1,59 @@
 import { Canvas } from '@react-three/fiber'
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Lenis from 'lenis'
 import MystechScene from './scene/MystechScene'
 
 const chapters = [
   {
-    number: '00',
-    kicker: 'MYS TECH — DIGITAL STUDIO',
-    title: <>Criamos sites que <em>viram espaço.</em></>,
-    body: 'Uma experiência contínua, limpa e tridimensional. Role para atravessar o projeto.',
-  },
-  {
     number: '01',
-    kicker: 'ESTRATÉGIA',
-    title: <>Tudo começa pelo <em>território.</em></>,
-    body: 'Marca, público e objetivo definem a arquitetura. Antes da interface, desenhamos o caminho.',
+    label: 'MYS TECH',
+    title: <>Sites com <em>presença.</em></>,
+    body: 'Design, tecnologia e movimento em uma experiência digital feita para ser lembrada.',
+    theme: 'light',
   },
   {
     number: '02',
-    kicker: 'DESIGN',
-    title: <>Uma tela nasce <em>dentro da outra.</em></>,
-    body: 'O conteúdo não troca de seção. Ele se transforma, encaixa e continua no próximo capítulo.',
+    label: 'ESTRATÉGIA',
+    title: <>Primeiro, o <em>caminho.</em></>,
+    body: 'Entendemos sua marca, sua proposta e o que o site precisa fazer.',
+    theme: 'light',
   },
   {
     number: '03',
-    kicker: 'DESENVOLVIMENTO',
-    title: <>Interface com <em>profundidade real.</em></>,
-    body: 'WebGL, motion e performance trabalhando juntos — sem excesso visual e sem cara de template.',
+    label: 'DESIGN',
+    title: <>Depois, a <em>forma.</em></>,
+    body: 'Criamos uma interface limpa, exclusiva e pensada para conduzir.',
+    theme: 'dark',
   },
   {
     number: '04',
-    kicker: 'ENTREGA',
-    title: <>Do mapa ao <em>site publicado.</em></>,
-    body: 'Responsivo, rápido, otimizado para busca e preparado para crescer junto com a empresa.',
+    label: 'DESENVOLVIMENTO',
+    title: <>Então, tudo <em>ganha vida.</em></>,
+    body: 'Interações, 3D, responsividade e performance trabalhando como uma só experiência.',
+    theme: 'dark',
   },
   {
     number: '05',
-    kicker: 'MYS TECH',
-    title: <>Vamos construir seu <em>próximo espaço digital.</em></>,
-    body: 'Sites institucionais e experiências digitais premium desenvolvidos do zero.',
+    label: 'ENTREGA',
+    title: <>Pronto para <em>existir.</em></>,
+    body: 'Publicação, SEO, velocidade e estrutura preparada para crescer.',
+    theme: 'light',
+  },
+  {
+    number: '06',
+    label: 'MYS TECH',
+    title: <>Seu próximo site <em>começa aqui.</em></>,
+    body: 'Sites institucionais e experiências digitais desenvolvidos do zero.',
+    theme: 'dark',
   },
 ]
 
 export default function App() {
+  const [activeTheme, setActiveTheme] = useState('light')
+  const [activeChapter, setActiveChapter] = useState(0)
+
   useEffect(() => {
-    const lenis = new Lenis({ duration: 1.25, smoothWheel: true, syncTouch: false })
+    const lenis = new Lenis({ duration: 1.15, smoothWheel: true, syncTouch: false })
     let frame
     const raf = (time) => {
       lenis.raf(time)
@@ -57,46 +66,75 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+    const sections = [...document.querySelectorAll('[data-chapter]')]
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+
+        if (!visible) return
+        const index = Number(visible.target.dataset.chapter)
+        setActiveChapter(index)
+        setActiveTheme(chapters[index].theme)
+      },
+      { threshold: [0.35, 0.5, 0.65] }
+    )
+
+    sections.forEach((section) => observer.observe(section))
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <main className="site-shell">
+    <main className="site-shell" data-theme={activeTheme}>
       <header className="nav">
         <a className="brand" href="#top">
-          <span className="brand-dot" />
+          <span className="brand-mark">M</span>
           <span>MYS TECH</span>
         </a>
-        <div className="nav-right">
-          <span>WEB DESIGN & DEVELOPMENT</span>
-          <a href="#contact">FALE COM A GENTE ↗</a>
+
+        <div className="nav-center">
+          <span>{chapters[activeChapter].number}</span>
+          <span>{chapters[activeChapter].label}</span>
         </div>
+
+        <a className="nav-contact" href="#contact">CONTATO ↗</a>
       </header>
 
       <div className="map-stage" aria-hidden="true">
         <Canvas
           dpr={[1, 1.6]}
-          camera={{ position: [8.5, 9.5, 15], fov: 36 }}
-          gl={{ antialias: true, alpha: true }}
+          camera={{ position: [7.8, 7.2, 13.5], fov: 34 }}
+          gl={{ antialias: true, alpha: false }}
         >
           <Suspense fallback={null}>
-            <MystechScene />
+            <MystechScene theme={activeTheme} />
           </Suspense>
         </Canvas>
       </div>
 
       <div id="top" className="story">
         {chapters.map((chapter, index) => (
-          <section className={`chapter chapter-${index}`} key={chapter.number}>
+          <section
+            className={`chapter chapter-${index}`}
+            data-chapter={index}
+            data-theme={chapter.theme}
+            key={chapter.number}
+          >
             <div className="chapter-copy">
               <div className="chapter-meta">
                 <span>{chapter.number}</span>
-                <span>{chapter.kicker}</span>
+                <span>{chapter.label}</span>
               </div>
+
               <h1>{chapter.title}</h1>
               <p>{chapter.body}</p>
 
               {index === 0 && (
                 <div className="scroll-note">
-                  <span className="scroll-line" />
-                  SCROLL TO EXPLORE
+                  <span />
+                  ROLE PARA NAVEGAR
                 </div>
               )}
 
@@ -108,13 +146,9 @@ export default function App() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  INICIAR UM PROJETO <span>↗</span>
+                  CRIAR MEU SITE <span>↗</span>
                 </a>
               )}
-            </div>
-
-            <div className="chapter-index">
-              {String(index + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}
             </div>
           </section>
         ))}
