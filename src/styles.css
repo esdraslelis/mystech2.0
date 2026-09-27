@@ -206,7 +206,7 @@ a { color: inherit; text-decoration: none; }
 .car-data span { font:8px 'DM Mono',monospace; margin-bottom:4px; }
 
 .project-card-cta { width:min(72vw,930px); display:flex; }
-.project-end { width:100%; min-height:calc((min(78vw,1040px))/1.62); background:#111; color:#fff; padding:7%; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; }
+.project-end { width:100%; min-height:min(48.2vw,642px); background:#111; color:#fff; padding:7%; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; }
 .project-end small { font:8px 'DM Mono',monospace; color:#6f6f6f; letter-spacing:.1em; }
 .project-end h3 { margin:28px 0 36px; font-size:clamp(44px,6vw,88px); line-height:.9; letter-spacing:-.065em; font-weight:500; }
 .project-end a { background:#fff; color:#0a0a0a; padding:14px 16px; display:flex; gap:30px; font:9px 'DM Mono',monospace; text-transform:uppercase; }
