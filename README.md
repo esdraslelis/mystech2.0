@@ -1,20 +1,25 @@
-# MysTech 2.0
+# Mys Tech 2.0
 
-Site institucional imersivo da Mys Tech.
+Site institucional da Mys Tech, reconstruído com React + Vite, GSAP e Lenis.
 
-## Stack
-- React + Vite
-- Three.js
-- React Three Fiber
-- Drei
-- Lenis
-- GSAP (próximas cenas)
+## Experiência
 
-## Direção
-Experiência premium baseada em narrativa por scroll, profundidade 3D, câmera cinematográfica e objetos que atravessam o espaço da interface.
+- Hero editorial com tipografia de grande escala
+- Scroll suave e animações de entrada
+- Portfólio horizontal no desktop e swipe no mobile
+- Seções de processo, diferenciais, FAQ e CTA
+- Layout responsivo
+- SEO básico e metatags sociais
 
-## Rodar
+## Rodar localmente
+
 ```bash
 npm install
 npm run dev
+```
+
+## Build
+
+```bash
+npm run build
 ```
