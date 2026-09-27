@@ -158,6 +158,123 @@ export default function App() {
         })
       })
 
+      gsap.to('.hero-stage', {
+        yPercent: 30,
+        rotationZ: 2.5,
+        scale: 0.9,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1,
+        },
+      })
+
+      gsap.to('.hero-title', {
+        yPercent: -10,
+        rotationX: 7,
+        transformPerspective: 900,
+        transformOrigin: '50% 100%',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1,
+        },
+      })
+
+      gsap.set('.physics-scene', {
+        transformPerspective: 1300,
+        transformStyle: 'preserve-3d',
+        rotationX: 9,
+        rotationY: -18,
+        rotationZ: -2,
+      })
+
+      const physics = gsap.timeline({
+        scrollTrigger: {
+          trigger: '.physics-lab',
+          start: 'top top',
+          end: '+=2800',
+          scrub: 1.15,
+          pin: '.physics-sticky',
+          anticipatePin: 1,
+        },
+      })
+
+      physics
+        .to('.physics-scene', {
+          rotationY: 26,
+          rotationX: -10,
+          rotationZ: 1.5,
+          xPercent: -8,
+          scale: 1.04,
+          duration: 1,
+          ease: 'none',
+        })
+        .to('.physics-panel-back', {
+          z: -260,
+          xPercent: 22,
+          rotationY: -18,
+          duration: 1,
+          ease: 'none',
+        }, 0)
+        .to('.physics-panel-front', {
+          z: 210,
+          xPercent: -6,
+          rotationY: 8,
+          duration: 1,
+          ease: 'none',
+        }, 0)
+        .to('.physics-scene', {
+          rotationY: -34,
+          rotationX: 12,
+          rotationZ: -3,
+          xPercent: 10,
+          yPercent: -4,
+          scale: 0.96,
+          duration: 1.2,
+          ease: 'none',
+        })
+        .to('.physics-panel-left', {
+          xPercent: -34,
+          z: 110,
+          rotationY: 28,
+          duration: 1.2,
+          ease: 'none',
+        }, '<')
+        .to('.physics-panel-right', {
+          xPercent: 34,
+          z: 80,
+          rotationY: -24,
+          duration: 1.2,
+          ease: 'none',
+        }, '<')
+        .to('.physics-scene', {
+          rotationY: 0,
+          rotationX: 0,
+          rotationZ: 0,
+          xPercent: 0,
+          yPercent: 0,
+          scale: 1.08,
+          duration: 1,
+          ease: 'none',
+        })
+        .to('.physics-panel-front', {
+          z: 120,
+          rotationY: 0,
+          xPercent: 0,
+          duration: 1,
+          ease: 'none',
+        }, '<')
+        .to('.physics-caption strong', {
+          letterSpacing: '-0.055em',
+          duration: 1,
+          ease: 'none',
+        }, '<')
+
       const mm = gsap.matchMedia()
 
       mm.add('(min-width: 901px)', () => {
@@ -178,14 +295,43 @@ export default function App() {
             invalidateOnRefresh: true,
           },
         })
+
+        gsap.fromTo('.project-card',
+          {
+            rotationY: 10,
+            rotationX: 1.5,
+            transformPerspective: 1400,
+            transformOrigin: '50% 50%',
+          },
+          {
+            rotationY: -7,
+            rotationX: -1.5,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: '.work-pin',
+              start: 'top top',
+              end: () => '+=' + getDistance(),
+              scrub: 1,
+            },
+          }
+        )
       })
 
       return () => mm.revert()
     }, root)
 
     const onPointer = (event) => {
-      root.current?.style.setProperty('--mx', event.clientX + 'px')
-      root.current?.style.setProperty('--my', event.clientY + 'px')
+      if (!root.current) return
+
+      const nx = event.clientX / window.innerWidth - 0.5
+      const ny = event.clientY / window.innerHeight - 0.5
+
+      root.current.style.setProperty('--mx', event.clientX + 'px')
+      root.current.style.setProperty('--my', event.clientY + 'px')
+      root.current.style.setProperty('--tilt-x', (nx * 16).toFixed(2) + 'deg')
+      root.current.style.setProperty('--tilt-y', (ny * -12).toFixed(2) + 'deg')
+      root.current.style.setProperty('--stage-x', (nx * 18).toFixed(1) + 'px')
+      root.current.style.setProperty('--stage-y', (ny * 14).toFixed(1) + 'px')
     }
     window.addEventListener('pointermove', onPointer, { passive: true })
 
@@ -263,6 +409,64 @@ export default function App() {
           <span>EXPERIÊNCIA QUE FICA NA MEMÓRIA</span><b>✦</b>
         </div>
       </div>
+
+      <section className="physics-lab" aria-label="Experiência em profundidade">
+        <div className="physics-sticky">
+          <div className="physics-copy">
+            <div className="section-label"><span>00</span> MUDANÇA DE PERSPECTIVA</div>
+            <div className="physics-caption">
+              <small>ROLE DEVAGAR ↓</small>
+              <strong>O site muda<br />de ângulo com você.</strong>
+              <p>Não é um slideshow. Os planos ocupam profundidades diferentes e a perspectiva se reorganiza conforme o scroll.</p>
+            </div>
+          </div>
+
+          <div className="physics-viewport" aria-hidden="true">
+            <div className="physics-floor" />
+            <div className="physics-orbit orbit-one" />
+            <div className="physics-orbit orbit-two" />
+
+            <div className="physics-scene">
+              <div className="physics-panel physics-panel-back">
+                <div className="panel-grid" />
+                <span>DEPTH / 03</span>
+                <b>STRUCTURE</b>
+              </div>
+
+              <div className="physics-panel physics-panel-left">
+                <span>01</span>
+                <b>IDENTIDADE</b>
+                <i />
+              </div>
+
+              <div className="physics-panel physics-panel-right">
+                <span>02</span>
+                <b>MOVIMENTO</b>
+                <i />
+              </div>
+
+              <div className="physics-panel physics-panel-front">
+                <div className="physics-browser">
+                  <div className="physics-browser-bar"><i /><i /><i /><span>MYS / EXPERIENCE</span></div>
+                  <div className="physics-browser-body">
+                    <small>WE BUILD DIGITAL PRESENCE</small>
+                    <div className="physics-mys">MYS</div>
+                    <div className="physics-blue-card">
+                      <span>CAMADA 04</span>
+                      <b>DEPTH<br />MATTERS.</b>
+                    </div>
+                    <em>MOVE / SCROLL / FEEL</em>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="physics-axis axis-x">X</div>
+            <div className="physics-axis axis-y">Y</div>
+            <div className="physics-axis axis-z">Z</div>
+          </div>
+        </div>
+      </section>
 
       <section className="manifesto section-pad" id="sobre">
         <div className="section-label reveal"><span>01</span> NOSSA IDEIA</div>
