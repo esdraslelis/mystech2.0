@@ -739,6 +739,72 @@ export function ProjectWorlds() {
   )
 }
 
+
+export function TimeFreezeField({ progressRef }) {
+  const refs = useRef([])
+  const shards = useMemo(
+    () => Array.from({ length: 24 }, (_, index) => {
+      const lane = (index % 6) - 2.5
+      const row = Math.floor(index / 6) - 1.5
+      return {
+        start: [lane * 1.7, row * 1.5, -284 - (index % 4) * 1.4],
+        end: [
+          lane * 2.35 + (index % 2 ? 1.4 : -1.4),
+          row * 2.0 + (index % 3 - 1) * 0.9,
+          -292 - (index % 5) * 2.1,
+        ],
+        rotation: [
+          (index % 4) * 0.7,
+          (index % 5) * 0.48,
+          (index % 3) * 0.8,
+        ],
+        scale: 0.18 + (index % 4) * 0.08,
+      }
+    }),
+    [],
+  )
+
+  useFrame(() => {
+    const p = smooth(range(progressRef.current, 0.86, 0.93))
+    refs.current.forEach((mesh, index) => {
+      if (!mesh) return
+      const shard = shards[index]
+      mesh.position.x = THREE.MathUtils.lerp(shard.start[0], shard.end[0], p)
+      mesh.position.y = THREE.MathUtils.lerp(shard.start[1], shard.end[1], p)
+      mesh.position.z = THREE.MathUtils.lerp(shard.start[2], shard.end[2], p)
+      mesh.rotation.x = shard.rotation[0] * p
+      mesh.rotation.y = shard.rotation[1] * p
+      mesh.rotation.z = shard.rotation[2] * p
+      mesh.scale.setScalar(shard.scale * (0.72 + p * 0.65))
+    })
+  })
+
+  return (
+    <group>
+      <SectionText position={[0, 4.3, -289]} size={0.58} color="#7286bd" maxWidth={14}>
+        SCROLL FORWARD = TIME FORWARD
+      </SectionText>
+      {shards.map((shard, index) => (
+        <mesh
+          key={'time-' + index}
+          ref={(node) => { refs.current[index] = node }}
+          position={shard.start}
+        >
+          {index % 3 === 0 ? <octahedronGeometry args={[1, 0]} /> : <boxGeometry args={[1.4, 0.32, 0.52]} />}
+          <meshStandardMaterial
+            color={index % 4 === 0 ? BLUE_SOFT : '#2a344b'}
+            emissive={index % 4 === 0 ? '#274fce' : '#071127'}
+            emissiveIntensity={index % 4 === 0 ? 1.2 : 0.35}
+            metalness={0.7}
+            roughness={0.2}
+          />
+        </mesh>
+      ))}
+      <pointLight position={[0, 0, -288]} color="#6688ff" intensity={18} distance={18} />
+    </group>
+  )
+}
+
 export function ManifestoWorld() {
   return (
     <group>
@@ -758,9 +824,17 @@ export function ManifestoWorld() {
 export function FinalMark({ progressRef }) {
   const ring = useRef()
   const core = useRef()
+  const terminal = useRef()
 
   useFrame(() => {
     const p = smooth(range(progressRef.current, 0.945, 1))
+    if (terminal.current) {
+      const terminalP = smooth(range(p, 0, 0.72))
+      terminal.current.position.z = 10 + terminalP * 4
+      terminal.current.rotation.x = -0.06 + terminalP * 0.24
+      terminal.current.scale.setScalar(1 - terminalP * 0.5)
+      terminal.current.visible = p < 0.9
+    }
     if (ring.current) {
       ring.current.scale.setScalar(0.72 + p * 0.28)
       ring.current.rotation.z = (1 - p) * 0.45
@@ -774,6 +848,28 @@ export function FinalMark({ progressRef }) {
 
   return (
     <group position={[0, 0, -329]}>
+      <group ref={terminal} position={[0, 0, 10]} rotation={[-0.06, 0, 0]}>
+        <mesh>
+          <boxGeometry args={[11, 6.7, 0.55]} />
+          <meshStandardMaterial color="#0a0f19" emissive="#10275f" emissiveIntensity={0.45} metalness={0.72} roughness={0.22} />
+        </mesh>
+        <mesh position={[0, 0, 0.31]}>
+          <planeGeometry args={[10.2, 5.9]} />
+          <meshStandardMaterial color="#080c14" emissive="#173b9d" emissiveIntensity={0.35} />
+        </mesh>
+        <Text position={[-3.9, 2.35, 0.4]} fontSize={0.32} color="#6f8fff" letterSpacing={0.12}>
+          MYS / TERMINAL
+        </Text>
+        <Text position={[0, 0.45, 0.42]} fontSize={0.78} color="#eef2ff" letterSpacing={-0.045}>
+          WHAT DO WE BUILD NEXT?
+        </Text>
+        <mesh position={[0, -1.05, 0.42]}>
+          <boxGeometry args={[5.6, 0.04, 0.03]} />
+          <meshBasicMaterial color="#4f70ee" />
+        </mesh>
+        <pointLight position={[0, 0, 2]} color={BLUE} intensity={24} distance={13} />
+      </group>
+
       <mesh ref={ring}>
         <torusGeometry args={[5.8, 0.21, 16, 96]} />
         <meshStandardMaterial color={WHITE} emissive="#3154db" emissiveIntensity={0.35} metalness={0.76} roughness={0.16} transparent opacity={0} />
