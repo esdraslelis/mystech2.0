@@ -65,6 +65,12 @@ export function LogoGate({ progressRef }) {
     [-4.5, -4.5, 5, 0.8, 0.5],
     [4.5, -4, 3, -0.7, -0.3],
   ]
+  const barBases = [
+    [-1.45, 0.35, 0.72],
+    [1.45, 0.35, -0.72],
+    [-0.7, -1.55, -0.72],
+    [0.7, -1.55, 0.72],
+  ]
   const barOffsets = [
     [-5, 2.5, 5, 0.9, -0.5],
     [5, 2.5, 3, -0.8, 0.45],
@@ -77,13 +83,17 @@ export function LogoGate({ progressRef }) {
     refs.current.forEach((mesh, index) => {
       if (!mesh) return
       const isArc = index < 4
-      const config = isArc ? arcOffsets[index] : barOffsets[index - 4]
-      mesh.position.x = config[0] * p
-      mesh.position.y = config[1] * p
+      const barIndex = index - 4
+      const config = isArc ? arcOffsets[index] : barOffsets[barIndex]
+      const baseX = isArc ? 0 : barBases[barIndex][0]
+      const baseY = isArc ? 0 : barBases[barIndex][1]
+      const baseRz = isArc ? index * Math.PI / 2 : barBases[barIndex][2]
+      mesh.position.x = baseX + config[0] * p
+      mesh.position.y = baseY + config[1] * p
       mesh.position.z = config[2] * p
       mesh.rotation.x = config[3] * p
       mesh.rotation.y = config[4] * p
-      mesh.rotation.z += (isArc ? 0.006 : -0.008) * p
+      mesh.rotation.z = baseRz + (isArc ? 0.7 : -0.8) * p
       const scale = 1 - p * 0.18
       mesh.scale.setScalar(scale)
       if (mesh.material) {
@@ -237,7 +247,6 @@ export function Megastructure({ progressRef, pointerRef }) {
         opacity={0.8}
       />
 
-      <group position={[pointerRef.current.x * 0.2, pointerRef.current.y * 0.15, 0]} />
     </group>
   )
 }
