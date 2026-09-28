@@ -1,5 +1,6 @@
 import { useMemo, useRef } from 'react'
-import { Edges, RoundedBox, Text, useFrame } from '@react-three/drei'
+import { Edges, RoundedBox, Text } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 const WHITE = '#edf2ff'
