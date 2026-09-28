@@ -1,8 +1,11 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Preload } from '@react-three/drei'
+import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
+
+gsap.registerPlugin(ScrollTrigger)
 import World from './experience/World'
 
 const stages = [
