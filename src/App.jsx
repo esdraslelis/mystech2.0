@@ -1,410 +1,343 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 const projects = [
   {
+    index: '01',
     name: 'AirBroker',
-    type: 'Plataforma de aviação',
-    tag: 'Estratégia · UI/UX · Desenvolvimento',
-    tone: 'light',
-    className: 'project-air',
-    description: 'Catálogo de aeronaves com foco em clareza, descoberta e uma presença digital premium.',
+    category: 'Plataforma de aviação',
+    role: 'Estratégia · UX/UI · Desenvolvimento',
+    description: 'Uma experiência pensada para tornar a busca por aeronaves clara, sofisticada e fácil de explorar.',
+    className: 'case-air',
   },
   {
+    index: '02',
     name: 'Oston Cambuí',
-    type: 'Ortopedia especializada',
-    tag: 'Direção visual · Site institucional',
-    tone: 'paper',
-    className: 'project-oston',
-    description: 'Uma experiência sóbria, humana e objetiva para uma clínica que precisa transmitir confiança.',
+    category: 'Ortopedia especializada',
+    role: 'Direção visual · Site institucional',
+    description: 'Informação médica organizada com sobriedade, confiança e uma leitura confortável em qualquer tela.',
+    className: 'case-oston',
   },
   {
+    index: '03',
     name: 'Mys System',
-    type: 'Produto digital',
-    tag: 'Produto · Interface · Automação',
-    tone: 'dark',
-    className: 'project-system',
-    description: 'Interfaces para transformar operação complexa em fluxos simples, claros e acionáveis.',
+    category: 'Produto digital',
+    role: 'Produto · Interface · Automação',
+    description: 'Uma interface para operação técnica com foco em leitura rápida, contexto e tomada de decisão.',
+    className: 'case-system',
   },
 ]
 
 const services = [
-  ['01', 'Sites institucionais', 'Para apresentar sua empresa, seus serviços e transformar visita em oportunidade de contato.'],
-  ['02', 'Landing pages', 'Uma mensagem forte, uma proposta clara e um caminho direto para a conversão.'],
-  ['03', 'Sites interativos', 'Movimento, profundidade e identidade para marcas que precisam causar uma impressão diferente.'],
-  ['04', 'Reformulação de sites', 'Nova estrutura, nova experiência e uma presença mais madura para empresas que cresceram.'],
+  ['Sites institucionais', 'Presença digital clara, sólida e alinhada à forma como sua empresa quer ser percebida.'],
+  ['Landing pages', 'Páginas com narrativa direta, hierarquia forte e foco em ação.'],
+  ['Sites interativos', 'Movimento e profundidade aplicados com critério, sem atrapalhar a navegação.'],
+  ['Reformulação', 'Uma nova estrutura para marcas que cresceram e precisam deixar a presença digital no mesmo nível.'],
 ]
 
-const process = [
-  ['01', 'Conversa', 'Entendemos sua empresa, seu público, referências e o que o site precisa resolver.'],
-  ['02', 'Direção visual', 'Definimos estrutura, linguagem visual e experiência antes de avançar na construção.'],
-  ['03', 'Criação', 'Design e desenvolvimento ganham forma com espaço para acompanhar, validar e revisar.'],
-  ['04', 'Publicação', 'Revisamos desktop, mobile, formulários, performance e colocamos tudo no ar.'],
+const steps = [
+  ['01', 'Conversa', 'Entendemos o negócio, o público e o que o site precisa resolver.'],
+  ['02', 'Direção', 'Definimos linguagem visual, estrutura e prioridades antes de desenhar.'],
+  ['03', 'Criação', 'Design e desenvolvimento avançam juntos, com revisão durante o processo.'],
+  ['04', 'Publicação', 'Ajustamos desempenho, mobile, conteúdo e colocamos o projeto no ar.'],
 ]
 
 const faqs = [
-  ['Meu site vai funcionar bem no celular?', 'Sim. O mobile é tratado como uma composição própria, não como uma versão espremida do desktop.'],
-  ['Posso contratar mesmo sem ter todos os textos?', 'Sim. Podemos estruturar o conteúdo junto com você e indicar o que precisa ser produzido antes da publicação.'],
-  ['Já tenho domínio. Posso usar?', 'Sim. Configuramos o domínio existente ou orientamos a contratação de um novo, conforme o projeto.'],
-  ['Como acompanho a criação?', 'Você acompanha as etapas, recebe versões para revisão e valida os principais pontos antes da publicação.'],
-  ['É possível atualizar o site depois?', 'Sim. A estrutura pode receber evoluções, novos conteúdos e ajustes conforme sua empresa cresce.'],
-  ['Como funciona o suporte após a entrega?', 'O suporte pode incluir hospedagem, manutenção e pequenas atualizações conforme o plano contratado.'],
+  ['O site funciona bem no celular?', 'Sim. O mobile é desenhado como uma experiência própria, não como uma versão espremida do desktop.'],
+  ['Preciso ter todo o conteúdo pronto?', 'Não. Podemos organizar a estrutura e orientar o que precisa ser produzido antes da publicação.'],
+  ['Já tenho domínio. Posso usar?', 'Sim. Podemos usar o domínio existente e ajustar a configuração necessária para publicação.'],
+  ['É possível atualizar depois?', 'Sim. O projeto pode evoluir com novos conteúdos, páginas e melhorias ao longo do tempo.'],
 ]
 
-function Arrow({ direction = 'ne' }) {
-  return <span className="arrow" aria-hidden="true">{direction === 'down' ? '↘' : '↗'}</span>
+function Arrow() {
+  return <span aria-hidden="true">↗</span>
 }
 
-function MonitorPreview() {
+function SitePreview({ kind }) {
   return (
-    <div className="monitor-scene" aria-hidden="true">
-      <div className="chrome-ribbon ribbon-a" />
-      <div className="chrome-ribbon ribbon-b" />
-      <div className="monitor-shadow" />
-      <div className="monitor">
-        <div className="monitor-bezel">
-          <div className="monitor-screen">
-            <div className="screen-topbar">
-              <span className="screen-brand">MYS</span>
-              <span>WORK / 2026</span>
-            </div>
-            <div className="screen-hero">
-              <div>
-                <span className="eyebrow">DIGITAL PRESENCE</span>
-                <h3>Design que<br />se move.</h3>
-              </div>
-              <div className="screen-orb">
-                <span />
-                <i />
-              </div>
-            </div>
-            <div className="screen-footer">
-              <span>Brand experience</span>
-              <span>Scroll to explore</span>
-            </div>
-          </div>
+    <div className={"site-preview " + kind} aria-hidden="true">
+      <div className="preview-bar">
+        <div className="preview-dots"><i/><i/><i/></div>
+        <span>mystech.project</span>
+      </div>
+      <div className="preview-canvas">
+        <div className="preview-nav"><strong>MYS</strong><span>Work&nbsp;&nbsp; Studio&nbsp;&nbsp; Contact</span></div>
+        <div className="preview-copy">
+          <small>{kind === 'air' ? 'AVIATION MARKETPLACE' : kind === 'oston' ? 'HEALTH & CARE' : 'OPERATIONS PLATFORM'}</small>
+          <h3>{kind === 'air' ? <>Explore<br/>without noise.</> : kind === 'oston' ? <>Clarity<br/>builds trust.</> : <>See more.<br/>Decide faster.</>}</h3>
         </div>
-        <div className="monitor-neck" />
-        <div className="monitor-base" />
+        <div className="preview-shape shape-a"/>
+        <div className="preview-shape shape-b"/>
+        <div className="preview-grid"/>
       </div>
     </div>
   )
 }
 
-function App() {
-  const heroRef = useRef(null)
-  const [activeDetail, setActiveDetail] = useState('visual')
-  const [activeService, setActiveService] = useState(0)
-  const [openFaq, setOpenFaq] = useState(null)
+export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [openFaq, setOpenFaq] = useState(null)
   const [briefOpen, setBriefOpen] = useState(false)
   const year = useMemo(() => new Date().getFullYear(), [])
 
   useEffect(() => {
-    const onScroll = () => {
-      const max = window.innerHeight * 1.05
-      const p = Math.min(window.scrollY / max, 1)
-      document.documentElement.style.setProperty('--hero-progress', p.toFixed(3))
-    }
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    const items = [...document.querySelectorAll('[data-reveal]')]
-    if (!items.length) return
+    const items = document.querySelectorAll('[data-reveal]')
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) entry.target.classList.add('is-visible')
+        if (entry.isIntersecting) entry.target.classList.add('visible')
       })
-    }, { threshold: 0.12 })
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' })
+
     items.forEach((item) => observer.observe(item))
     return () => observer.disconnect()
   }, [])
 
   return (
     <main>
-      <header className="site-header">
-        <a className="logo" href="#top" aria-label="Mys Tech - início">
+      <header className="topbar">
+        <a href="#inicio" className="brand">
           <img src="/mys-logo.svg" alt="" />
           <span>MYS TECH</span>
         </a>
 
-        <nav className={menuOpen ? 'nav-links open' : 'nav-links'}>
+        <nav className={menuOpen ? 'main-nav open' : 'main-nav'}>
           <a href="#projetos" onClick={() => setMenuOpen(false)}>Projetos</a>
-          <a href="#estudio" onClick={() => setMenuOpen(false)}>Estúdio</a>
+          <a href="#servicos" onClick={() => setMenuOpen(false)}>Serviços</a>
           <a href="#processo" onClick={() => setMenuOpen(false)}>Como funciona</a>
-          <a href="#contato" onClick={() => setMenuOpen(false)}>Vamos conversar <Arrow /></a>
+          <a className="nav-cta" href="#contato" onClick={() => setMenuOpen(false)}>Vamos conversar <Arrow /></a>
         </nav>
 
-        <button className="menu-button" onClick={() => setMenuOpen((v) => !v)} aria-label="Abrir menu">
-          <span />
-          <span />
+        <button className="menu-toggle" onClick={() => setMenuOpen(v => !v)} aria-label="Abrir menu">
+          <i/><i/>
         </button>
       </header>
 
-      <section className="hero" id="top" ref={heroRef}>
-        <div className="hero-grid">
-          <div className="hero-copy">
-            <div className="kicker">MYS TECH — DESIGN E DESENVOLVIMENTO WEB</div>
-            <h1>
-              <span>Seu negócio.</span>
-              <span>Outra <em>presença.</em></span>
-            </h1>
-            <p>Criamos sites com identidade, movimento e atenção a cada detalhe. Feitos para apresentar sua empresa e aproximar novos clientes.</p>
-            <div className="hero-actions">
-              <a href="#projetos">Conheça os projetos <Arrow direction="down" /></a>
-              <a href="#contato">Vamos criar seu site <Arrow /></a>
-            </div>
-          </div>
-
-          <div className="hero-visual">
-            <MonitorPreview />
-          </div>
-        </div>
-
-        <div className="hero-bottom">
-          <span>Sites institucionais / Experiências interativas / Landing pages</span>
-          <span>Explore com o scroll ↓</span>
-        </div>
-      </section>
-
-      <section className="screen-transition" aria-hidden="true">
-        <div className="transition-frame">
-          <div className="transition-ui">
-            <span>PROJECT / 01</span>
-            <h2>Uma interface que deixa de ser só tela.</h2>
-            <div className="transition-line" />
-            <div className="transition-grid">
-              <span>Estratégia</span><span>Design</span><span>Desenvolvimento</span>
+      <section className="hero" id="inicio">
+        <div className="hero-copy" data-reveal>
+          <span className="meta">MYS TECH · DESIGN & DESENVOLVIMENTO WEB</span>
+          <h1>Seu site<br/>precisa ter<br/><em>presença.</em></h1>
+          <div className="hero-support">
+            <p>Criamos experiências digitais com identidade, clareza e acabamento. Sem cara de template. Sem efeito por efeito.</p>
+            <div className="hero-links">
+              <a href="#projetos">Ver projetos <Arrow /></a>
+              <a href="#contato">Criar meu site <Arrow /></a>
             </div>
           </div>
         </div>
-      </section>
 
-      <section className="projects section" id="projetos">
-        <div className="section-heading" data-reveal>
-          <span className="eyebrow">PROJETOS SELECIONADOS</span>
-          <h2>Cada negócio tem uma história.<br />O site precisa mostrar a sua.</h2>
-        </div>
-
-        <div className="project-list">
-          {projects.map((project, index) => (
-            <article className={'project-block ' + project.className} key={project.name} data-reveal>
-              <div className="project-media">
-                <div className="project-browser">
-                  <div className="browser-top">
-                    <span /><span /><span />
-                    <i>{project.name.toLowerCase().replaceAll(' ', '')}.com.br</i>
-                  </div>
-                  <div className="browser-body">
-                    <div className="browser-label">{project.type.toUpperCase()}</div>
-                    <h3>{project.name}</h3>
-                    <p>{project.description}</p>
-                    <div className="browser-art">
-                      <span className="art-line line-1" />
-                      <span className="art-line line-2" />
-                      <span className="art-card card-1" />
-                      <span className="art-card card-2" />
-                    </div>
-                  </div>
-                </div>
+        <div className="hero-art" data-reveal>
+          <div className="hero-window">
+            <div className="window-head">
+              <span>MYS / WORK</span>
+              <span>2026</span>
+            </div>
+            <div className="window-body">
+              <div className="window-copy">
+                <small>SELECTED EXPERIENCE</small>
+                <strong>Digital work<br/>with intention.</strong>
               </div>
-              <div className="project-meta">
+              <div className="window-object">
+                <div className="orbit one"/>
+                <div className="orbit two"/>
+                <div className="core"/>
+              </div>
+              <div className="window-foot">
+                <span>Strategy · Design · Build</span>
+                <span>Scroll to explore ↓</span>
+              </div>
+            </div>
+          </div>
+          <div className="chrome-stroke stroke-a"/>
+          <div className="chrome-stroke stroke-b"/>
+        </div>
+
+        <div className="hero-caption">
+          <span>Sites institucionais</span>
+          <span>Landing pages</span>
+          <span>Experiências interativas</span>
+        </div>
+      </section>
+
+      <section className="intro-flow">
+        <div className="intro-index">01</div>
+        <div className="intro-text" data-reveal>
+          <p className="lead">Um bom site não precisa parecer um espetáculo o tempo inteiro.</p>
+          <p className="body">Ele precisa ter ritmo, proporção e uma lógica visual clara. O movimento entra quando melhora a percepção; o silêncio entra quando ajuda o conteúdo a respirar.</p>
+        </div>
+        <div className="intro-note" data-reveal>
+          <span>PROCESSO</span>
+          <p>Primeiro estrutura.<br/>Depois estética.<br/>Por último, efeitos.</p>
+        </div>
+      </section>
+
+      <section className="work" id="projetos">
+        <div className="work-heading" data-reveal>
+          <span className="meta">PROJETOS SELECIONADOS</span>
+          <h2>Trabalhos que mudam de forma conforme a necessidade do negócio.</h2>
+        </div>
+
+        <div className="cases">
+          <article className="case case-featured" data-reveal>
+            <div className="case-visual case-air"><SitePreview kind="air"/></div>
+            <div className="case-info">
+              <span>01</span>
+              <div>
+                <h3>AirBroker</h3>
+                <p>Plataforma de aviação</p>
+              </div>
+              <p className="case-description">Uma experiência pensada para tornar a busca por aeronaves clara, sofisticada e fácil de explorar.</p>
+              <a href="#contato">Ver projeto <Arrow /></a>
+            </div>
+          </article>
+
+          <div className="case-pair">
+            <article className="case case-compact" data-reveal>
+              <div className="case-visual case-oston"><SitePreview kind="oston"/></div>
+              <div className="case-info">
+                <span>02</span>
                 <div>
-                  <span className="project-index">0{index + 1}</span>
-                  <h3>{project.name}</h3>
-                  <p>{project.tag}</p>
+                  <h3>Oston Cambuí</h3>
+                  <p>Ortopedia especializada</p>
                 </div>
-                <a href="#contato">Explorar projeto <Arrow /></a>
+                <a href="#contato">Ver projeto <Arrow /></a>
               </div>
+            </article>
+
+            <article className="case case-compact offset" data-reveal>
+              <div className="case-visual case-system"><SitePreview kind="system"/></div>
+              <div className="case-info">
+                <span>03</span>
+                <div>
+                  <h3>Mys System</h3>
+                  <p>Produto digital</p>
+                </div>
+                <a href="#contato">Ver projeto <Arrow /></a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="manifesto">
+        <div className="manifesto-track">
+          <span>Bonito sem exagero.</span>
+          <span>Claro sem ser comum.</span>
+          <span>Interativo sem virar brinquedo.</span>
+        </div>
+      </section>
+
+      <section className="services" id="servicos">
+        <div className="services-heading" data-reveal>
+          <span className="meta">O QUE FAZEMOS</span>
+          <h2>O formato certo, sem empilhar coisa que você não precisa.</h2>
+        </div>
+        <div className="services-list">
+          {services.map((service, i) => (
+            <article key={service[0]} data-reveal>
+              <span className="service-index">0{i + 1}</span>
+              <h3>{service[0]}</h3>
+              <p>{service[1]}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="dark-section" id="estudio">
-        <div className="dark-intro" data-reveal>
-          <span className="eyebrow">NOSSO JEITO DE PENSAR</span>
-          <h2>Bonito no primeiro olhar.<br />Bem pensado em cada clique.</h2>
+      <section className="studio">
+        <div className="studio-visual" data-reveal>
+          <div className="studio-mark">
+            <img src="/mys-logo.svg" alt="" />
+            <span>MYS TECH</span>
+          </div>
+          <div className="studio-line one"/>
+          <div className="studio-line two"/>
+          <div className="studio-dot"/>
         </div>
-
-        <div className="principles">
-          <article data-reveal>
-            <span>01</span>
-            <h3>Identidade</h3>
-            <p>Um site que combina com a sua empresa, do primeiro título ao último detalhe.</p>
-          </article>
-          <article data-reveal>
-            <span>02</span>
-            <h3>Clareza</h3>
-            <p>Informações organizadas para o visitante entender, confiar e entrar em contato.</p>
-          </article>
-          <article data-reveal>
-            <span>03</span>
-            <h3>Experiência</h3>
-            <p>Navegação fluida, leitura confortável e atenção especial ao celular.</p>
-          </article>
+        <div className="studio-copy" data-reveal>
+          <span className="meta">NOSSA FORMA DE TRABALHAR</span>
+          <h2>Design com intenção.<br/>Tecnologia com fundamento.</h2>
+          <p>A parte visual chama atenção. A estrutura faz o site continuar bom depois que a novidade passa. Por isso tratamos tipografia, conteúdo, performance, responsividade e interação como uma coisa só.</p>
         </div>
       </section>
 
-      <section className="detail-lab section">
-        <div className="detail-copy" data-reveal>
-          <span className="eyebrow">VEJA A DIFERENÇA NOS DETALHES</span>
-          <h2>Uma interface pode orientar sem precisar gritar.</h2>
-          <p>Explore os três pilares. A composição muda, mas a ideia continua a mesma: cada efeito precisa ter uma função.</p>
-
-          <div className="detail-tabs" role="tablist">
-            {[
-              ['visual', 'Visual'],
-              ['navigation', 'Navegação'],
-              ['motion', 'Movimento'],
-            ].map(([id, label]) => (
-              <button key={id} className={activeDetail === id ? 'active' : ''} onClick={() => setActiveDetail(id)}>
-                {label}
-              </button>
-            ))}
-          </div>
+      <section className="process" id="processo">
+        <div className="process-heading" data-reveal>
+          <span className="meta">DO BRIEFING AO AR</span>
+          <h2>Um processo simples de acompanhar.</h2>
         </div>
-
-        <div className={'detail-demo demo-' + activeDetail} data-reveal>
-          <div className="demo-window">
-            <div className="demo-nav">
-              <span>MYS / LAB</span>
-              <span>Menu</span>
-            </div>
-            <div className="demo-stage">
-              <span className="demo-kicker">DIGITAL EXPERIENCES</span>
-              <h3>{activeDetail === 'visual' ? 'Hierarquia que dá ritmo.' : activeDetail === 'navigation' ? 'Navegação que parece óbvia.' : 'Movimento com começo e fim.'}</h3>
-              <p>{activeDetail === 'visual' ? 'Tipografia, respiro e contraste organizam o conteúdo.' : activeDetail === 'navigation' ? 'O visitante encontra o próximo passo sem precisar pensar onde clicar.' : 'As transições ajudam a conduzir a atenção e depois saem de cena.'}</p>
-              <div className="demo-object"><i /><b /></div>
-            </div>
-            <div className="demo-footer"><span>01</span><span>Scroll / Tap</span></div>
-          </div>
-        </div>
-      </section>
-
-      <section className="services section">
-        <div className="section-heading small" data-reveal>
-          <span className="eyebrow">O QUE CRIAMOS</span>
-          <h2>O formato certo para<br />a sua próxima etapa.</h2>
-        </div>
-
-        <div className="services-list">
-          {services.map((service, index) => (
-            <button key={service[1]} className={activeService === index ? 'service-row active' : 'service-row'} onClick={() => setActiveService(index)} data-reveal>
-              <span className="service-number">{service[0]}</span>
-              <span className="service-title">{service[1]}</span>
-              <span className="service-description">{service[2]}</span>
-              <span className="service-arrow">↘</span>
-            </button>
+        <div className="process-list">
+          {steps.map(step => (
+            <article key={step[0]} data-reveal>
+              <span>{step[0]}</span>
+              <h3>{step[1]}</h3>
+              <p>{step[2]}</p>
+            </article>
           ))}
         </div>
       </section>
 
-      <section className="process section" id="processo">
-        <div className="process-intro" data-reveal>
-          <span className="eyebrow">COMO FUNCIONA</span>
-          <h2>Você conhece seu negócio.<br />Nós damos forma à presença dele.</h2>
+      <section className="faq">
+        <div className="faq-heading" data-reveal>
+          <span className="meta">ANTES DE COMEÇAR</span>
+          <h2>Algumas respostas rápidas.</h2>
         </div>
-
-        <div className="process-grid">
-          <div className="process-rail"><span /></div>
-          <div className="process-list">
-            {process.map((item) => (
-              <article key={item[0]} data-reveal>
-                <span>{item[0]}</span>
-                <div>
-                  <h3>{item[1]}</h3>
-                  <p>{item[2]}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="about section">
-        <div className="about-visual" data-reveal>
-          <div className="about-frame">
-            <div className="about-noise" />
-            <span>MYS TECH / STUDIO</span>
-            <strong>Design<br />×<br />Tecnologia</strong>
-          </div>
-        </div>
-
-        <div className="about-copy" data-reveal>
-          <span className="eyebrow">SOBRE A MYS TECH</span>
-          <h2>Design com intenção.<br />Tecnologia com fundamento.</h2>
-          <p>A Mys Tech une criação visual e conhecimento técnico para construir sites bem apresentados, bem executados e preparados para funcionar no mundo real.</p>
-          <a href="#contato">Conhecer a Mys Tech <Arrow /></a>
-        </div>
-      </section>
-
-      <section className="faq section">
-        <div className="section-heading small" data-reveal>
-          <span className="eyebrow">DÚVIDAS ANTES DE COMEÇAR</span>
-          <h2>O essencial, sem enrolação.</h2>
-        </div>
-
         <div className="faq-list">
-          {faqs.map((item, index) => (
-            <button className={openFaq === index ? 'faq-item open' : 'faq-item'} key={item[0]} onClick={() => setOpenFaq(openFaq === index ? null : index)} data-reveal>
-              <span>{item[0]}</span>
-              <i>{openFaq === index ? '−' : '+'}</i>
+          {faqs.map((item, i) => (
+            <button key={item[0]} className={openFaq === i ? 'faq-item open' : 'faq-item'} onClick={() => setOpenFaq(openFaq === i ? null : i)} data-reveal>
+              <div><span>0{i + 1}</span><strong>{item[0]}</strong><i>{openFaq === i ? '−' : '+'}</i></div>
               <p>{item[1]}</p>
             </button>
           ))}
         </div>
       </section>
 
-      <section className="cta section" id="contato">
-        <div className="cta-ribbon" aria-hidden="true" />
-        <span className="eyebrow" data-reveal>PRONTO PARA COMEÇAR?</span>
-        <h2 data-reveal>Vamos criar<br />o seu próximo site?</h2>
-        <p data-reveal>Conte um pouco sobre a sua empresa e o que você imagina para ela.</p>
-        <div className="cta-actions" data-reveal>
-          <a href="https://wa.me/5535997541933?text=Olá!%20Quero%20conversar%20sobre%20um%20site." target="_blank" rel="noreferrer">Conversar sobre meu projeto <Arrow /></a>
-          <button onClick={() => setBriefOpen(true)}>Prefiro preencher um briefing</button>
+      <section className="contact" id="contato">
+        <div className="contact-copy" data-reveal>
+          <span className="meta">SE FIZER SENTIDO, A GENTE COMEÇA.</span>
+          <h2>Vamos criar uma presença que combine com o nível do seu negócio.</h2>
+        </div>
+        <div className="contact-actions" data-reveal>
+          <a className="primary" href="https://wa.me/5535997541933?text=Olá!%20Quero%20conversar%20sobre%20um%20site." target="_blank" rel="noreferrer">Conversar no WhatsApp <Arrow /></a>
+          <button onClick={() => setBriefOpen(true)}>Preencher briefing</button>
         </div>
       </section>
 
       <footer>
-        <div className="footer-top">
-          <div>
+        <div className="footer-main">
+          <div className="footer-brand">
             <img src="/mys-logo.svg" alt="" />
-            <strong>Mys Tech</strong>
-            <p>Sites com identidade. Experiências bem construídas.</p>
+            <div><strong>Mys Tech</strong><span>Design & desenvolvimento web</span></div>
           </div>
           <div className="footer-links">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer">Instagram <Arrow /></a>
-            <a href="https://wa.me/5535997541933" target="_blank" rel="noreferrer">WhatsApp <Arrow /></a>
+            <a href="#projetos">Projetos</a>
+            <a href="#servicos">Serviços</a>
+            <a href="#processo">Processo</a>
             <a href="mailto:contato@mystech.com.br">E-mail <Arrow /></a>
           </div>
         </div>
-        <div className="footer-bottom">
-          <span>© {year} MYS TECH</span>
-          <span>Política de privacidade</span>
-        </div>
-        <div className="footer-word">MYS</div>
+        <div className="footer-meta"><span>© {year} MYS TECH</span><span>POUSO ALEGRE · MG</span></div>
       </footer>
 
-      <aside className={briefOpen ? 'brief-panel open' : 'brief-panel'}>
-        <button className="brief-close" onClick={() => setBriefOpen(false)} aria-label="Fechar briefing">×</button>
-        <span className="eyebrow">BRIEFING RÁPIDO</span>
-        <h2>Conte o básico.<br />A gente começa daqui.</h2>
+      <aside className={briefOpen ? 'brief open' : 'brief'}>
+        <button className="brief-close" onClick={() => setBriefOpen(false)}>×</button>
+        <span className="meta">BRIEFING RÁPIDO</span>
+        <h2>Conte o essencial.</h2>
         <form onSubmit={(e) => e.preventDefault()}>
-          <label>Nome<input placeholder="Seu nome" /></label>
-          <label>Empresa<input placeholder="Nome da empresa" /></label>
-          <label>WhatsApp ou e-mail<input placeholder="Como podemos falar com você?" /></label>
-          <label>Tipo de projeto<select defaultValue=""><option value="" disabled>Selecione</option><option>Site institucional</option><option>Landing page</option><option>Site interativo</option><option>Reformulação</option></select></label>
-          <label>O que você precisa?<textarea placeholder="Conte um pouco sobre o projeto" rows="5" /></label>
+          <label>Nome<input placeholder="Seu nome"/></label>
+          <label>Empresa<input placeholder="Sua empresa"/></label>
+          <label>Contato<input placeholder="WhatsApp ou e-mail"/></label>
+          <label>Tipo de projeto
+            <select defaultValue="">
+              <option value="" disabled>Selecione</option>
+              <option>Site institucional</option>
+              <option>Landing page</option>
+              <option>Site interativo</option>
+              <option>Reformulação</option>
+            </select>
+          </label>
+          <label>O que você precisa?<textarea rows="5" placeholder="Explique em poucas linhas"/></label>
           <button type="submit">Enviar briefing <Arrow /></button>
         </form>
       </aside>
-      {briefOpen && <button className="panel-backdrop" onClick={() => setBriefOpen(false)} aria-label="Fechar briefing" />}
+      {briefOpen && <button className="brief-backdrop" onClick={() => setBriefOpen(false)} aria-label="Fechar"/>}
     </main>
   )
 }
-
-export default App
