@@ -1,138 +1,44 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Preload } from '@react-three/drei'
-import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import World from './experience/World'
 
-gsap.registerPlugin(ScrollTrigger)
-
-const scenes = [
-  {
-    id: 'awakening',
-    label: '00 / WAKE',
-    range: [0, 0.105],
-    eyebrow: 'MYS TECH / INITIALIZING',
-    title: 'O mundo acorda.',
-    copy: 'Role para atravessar a marca.',
-  },
-  {
-    id: 'impact',
-    label: '01 / WORLD',
-    range: [0.105, 0.255],
-    eyebrow: 'SCROLL ≠ PÁGINA',
-    title: 'Agora o scroll move a câmera.',
-    copy: 'Avanço, rotação, profundidade e gravidade passam a fazer parte da navegação.',
-  },
-  {
-    id: 'sites',
-    label: '02 / SITES',
-    range: [0.255, 0.385],
-    eyebrow: 'DIGITAL ARCHITECTURE',
-    title: 'Seu site não é uma página.',
-    copy: 'Interface, movimento e estrutura passam a existir em camadas físicas.',
-  },
-  {
-    id: 'layers',
-    label: '03 / LAYERS',
-    range: [0.385, 0.5],
-    eyebrow: 'FRONT → SECURITY',
-    title: 'Atravessamos cada camada.',
-    copy: 'Front-end, UX/UI, backend, integrações, infraestrutura e segurança.',
-  },
-  {
-    id: 'telecom',
-    label: '04 / TELECOM',
-    range: [0.5, 0.615],
-    eyebrow: 'INFRASTRUCTURE',
-    title: 'A interface vira fibra.',
-    copy: 'BNG, OLT, backbone e conexões formam uma cidade de dados.',
-  },
-  {
-    id: 'automation',
-    label: '05 / FLOW',
-    range: [0.615, 0.715],
-    eyebrow: 'MYS SYSTEM',
-    title: 'Dados começam a circular.',
-    copy: 'Lead, CRM, WhatsApp, automação, banco e dashboard como fluxo vivo.',
-  },
-  {
-    id: 'projects',
-    label: '06 / WORLDS',
-    range: [0.715, 0.9],
-    eyebrow: 'SELECTED WORLDS',
-    title: 'Projetos viram lugares.',
-    copy: 'AirBroker, Oston, Mys Monitoring e Vila Veículos existem como ambientes, não cards.',
-  },
-  {
-    id: 'final',
-    label: '07 / MYS',
-    range: [0.9, 1.001],
-    eyebrow: 'THE LOOP CLOSES',
-    title: 'Tecnologia deveria parecer impossível.',
-    copy: 'Até funcionar.',
-  },
+const stages = [
+  { id: 'intro', from: 0, to: 0.18, label: '01 / INTRO', title: 'Um mundo, não uma homepage.', note: 'Role para se aproximar do monitor.' },
+  { id: 'screen', from: 0.18, to: 0.36, label: '02 / SCREEN', title: 'A tela deixa de ser plana.', note: 'A interface ganha profundidade e a câmera atravessa o painel.' },
+  { id: 'globe', from: 0.36, to: 0.56, label: '03 / ORBIT', title: 'O scroll vira trajetória.', note: 'A câmera orbita o globo enquanto a orientação do mundo começa a mudar.' },
+  { id: 'gravity', from: 0.56, to: 0.72, label: '04 / GRAVITY', title: 'A parede vira chão.', note: 'Peças passam a cair lateralmente. Volte o scroll e tudo retorna.' },
+  { id: 'horizontal', from: 0.72, to: 1.001, label: '05 / HORIZONTAL', title: 'O scroll continua vertical. A viagem, não.', note: 'Agora a câmera percorre uma composição tridimensional lateral.' },
 ]
 
-function findScene(progress) {
-  const found = scenes.findIndex((scene) => progress >= scene.range[0] && progress < scene.range[1])
-  return found === -1 ? scenes.length - 1 : found
-}
-
-function SceneHud({ activeScene }) {
-  const scene = scenes[activeScene]
-  const isIntro = activeScene === 0
-  const isFinal = activeScene === scenes.length - 1
-
-  return (
-    <>
-      <div className={'scene-hud ' + (isIntro ? 'scene-hud-intro' : '')} key={scene.id}>
-        <div className="scene-hud-rule" />
-        <span className="scene-hud-eyebrow">{scene.eyebrow}</span>
-        <h1>{scene.title}</h1>
-        <p>{scene.copy}</p>
-      </div>
-
-      {isIntro && (
-        <div className="wake-hint">
-          <span>SCROLL TO WAKE</span>
-          <i />
-        </div>
-      )}
-
-      {isFinal && (
-        <div className="contact-terminal">
-          <small>TERMINAL / MYS TECH</small>
-          <div className="terminal-actions">
-            <a href="https://wa.me/5535997541933?text=Ol%C3%A1%2C%20quero%20criar%20um%20projeto%20com%20a%20Mys%20Tech." target="_blank" rel="noreferrer">
-              <span>Criar um projeto</span><b>↗</b>
-            </a>
-            <a href="https://wa.me/5535997541933" target="_blank" rel="noreferrer">
-              <span>Falar com a Mys Tech</span><b>↗</b>
-            </a>
-            <a href="#journey-projects">
-              <span>Conhecer nosso trabalho</span><b>↑</b>
-            </a>
-          </div>
-        </div>
-      )}
-    </>
-  )
+function getStage(progress) {
+  const index = stages.findIndex((stage) => progress >= stage.from && progress < stage.to)
+  return index === -1 ? stages.length - 1 : index
 }
 
 export default function App() {
   const progressRef = useRef(0)
   const pointerRef = useRef({ x: 0, y: 0 })
-  const activeSceneRef = useRef(0)
-  const [activeScene, setActiveScene] = useState(0)
+  const stageRef = useRef(0)
+  const [stageIndex, setStageIndex] = useState(0)
+  const [reducedMotion, setReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReducedMotion(media.matches)
+    sync()
+    media.addEventListener?.('change', sync)
+    return () => media.removeEventListener?.('change', sync)
+  }, [])
 
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.08,
+      duration: reducedMotion ? 0.35 : 0.72,
       smoothWheel: true,
       syncTouch: false,
-      wheelMultiplier: 0.82,
+      wheelMultiplier: 0.84,
     })
 
     lenis.on('scroll', ScrollTrigger.update)
@@ -145,19 +51,18 @@ export default function App() {
     rafId = requestAnimationFrame(raf)
 
     const trigger = ScrollTrigger.create({
-      trigger: '.scroll-journey',
+      trigger: '.prototype-scroll',
       start: 'top top',
       end: 'bottom bottom',
       onUpdate: (self) => {
         progressRef.current = self.progress
+        document.documentElement.style.setProperty('--progress', self.progress)
 
-        const nextScene = findScene(self.progress)
-        if (nextScene !== activeSceneRef.current) {
-          activeSceneRef.current = nextScene
-          setActiveScene(nextScene)
+        const next = getStage(self.progress)
+        if (next !== stageRef.current) {
+          stageRef.current = next
+          setStageIndex(next)
         }
-
-        document.documentElement.style.setProperty('--journey-progress', self.progress)
       },
     })
 
@@ -168,80 +73,87 @@ export default function App() {
       cancelAnimationFrame(rafId)
       lenis.destroy()
     }
-  }, [])
+  }, [reducedMotion])
 
   useEffect(() => {
-    const onPointerMove = (event) => {
+    const move = (event) => {
       pointerRef.current.x = (event.clientX / window.innerWidth) * 2 - 1
       pointerRef.current.y = -((event.clientY / window.innerHeight) * 2 - 1)
     }
 
-    const onPointerLeave = () => {
-      pointerRef.current.x *= 0.25
-      pointerRef.current.y *= 0.25
+    const leave = () => {
+      pointerRef.current.x = 0
+      pointerRef.current.y = 0
     }
 
-    window.addEventListener('pointermove', onPointerMove, { passive: true })
-    window.addEventListener('pointerleave', onPointerLeave, { passive: true })
-
+    window.addEventListener('pointermove', move, { passive: true })
+    window.addEventListener('pointerleave', leave, { passive: true })
     return () => {
-      window.removeEventListener('pointermove', onPointerMove)
-      window.removeEventListener('pointerleave', onPointerLeave)
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerleave', leave)
     }
   }, [])
 
-  const showHeader = activeScene > 0
+  const stage = stages[stageIndex]
 
   return (
-    <main className="cinematic-site">
-      <div className="webgl-stage" aria-hidden="true">
+    <main className="prototype">
+      <div className="viewport" aria-hidden="true">
         <Canvas
           dpr={[1, 1.45]}
-          camera={{ position: [0, 0, 14], fov: 42, near: 0.05, far: 180 }}
-          gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+          shadows
+          gl={{
+            antialias: true,
+            alpha: false,
+            powerPreference: 'high-performance',
+            toneMapping: 4,
+            toneMappingExposure: 0.88,
+          }}
         >
           <Suspense fallback={null}>
-            <World progressRef={progressRef} pointerRef={pointerRef} />
+            <World
+              progressRef={progressRef}
+              pointerRef={pointerRef}
+              reducedMotion={reducedMotion}
+            />
             <Preload all />
           </Suspense>
         </Canvas>
       </div>
 
-      <div className="film-grain" aria-hidden="true" />
-      <div className="vignette" aria-hidden="true" />
+      <div className="cinema-vignette" />
 
-      <header className={'world-nav ' + (showHeader ? 'visible' : '')}>
-        <a className="world-brand" href="#journey-start" aria-label="Mys Tech">
+      <header className="minimal-nav">
+        <a href="#intro" className="brand">
           <img src="/mys-logo.svg" alt="" />
           <span>MYS TECH</span>
         </a>
-        <div className="world-status">
-          <span>{scenes[activeScene].label}</span>
+
+        <div className="progress">
+          <span>{stage.label}</span>
           <i><b /></i>
-          <span>{String(activeScene + 1).padStart(2, '0')} / {String(scenes.length).padStart(2, '0')}</span>
+          <span>PROTOTYPE / PHYSICS</span>
         </div>
-        <a className="world-contact" href="https://wa.me/5535997541933" target="_blank" rel="noreferrer">CONTATO ↗</a>
+
+        <span className="prototype-tag">WEBGL FOUNDATION</span>
       </header>
 
-      <aside className={'scene-index ' + (showHeader ? 'visible' : '')}>
-        {scenes.map((scene, index) => (
-          <a key={scene.id} className={index === activeScene ? 'active' : ''} href={'#journey-' + scene.id}>
-            <span>{String(index + 1).padStart(2, '0')}</span>
-            <b>{scene.id}</b>
-          </a>
-        ))}
-      </aside>
+      <section className={'hud hud-' + stage.id} key={stage.id}>
+        <span>{stage.label}</span>
+        <h1>{stage.title}</h1>
+        <p>{stage.note}</p>
+      </section>
 
-      <SceneHud activeScene={activeScene} />
+      {stageIndex === 0 && (
+        <div className="scroll-cue">
+          <span>SCROLL</span>
+          <i />
+        </div>
+      )}
 
-      <div className="scroll-journey">
-        {scenes.map((scene, index) => (
-          <section
-            id={'journey-' + scene.id}
-            className="journey-marker"
-            key={scene.id}
-            data-scene={index}
-          />
+      <div className="prototype-scroll">
+        {stages.map((item) => (
+          <section id={item.id} key={item.id} className="scroll-segment" />
         ))}
       </div>
     </main>
