@@ -1,5 +1,6 @@
 import { useMemo, useRef } from 'react'
-import { PerspectiveCamera, useFrame } from '@react-three/drei'
+import { PerspectiveCamera } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 const introPoints = [
