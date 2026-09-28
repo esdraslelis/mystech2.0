@@ -243,7 +243,6 @@ export default function App() {
             data-scene={index}
           />
         ))}
-        <section id="journey-projects" className="journey-project-anchor" />
       </div>
     </main>
   )
