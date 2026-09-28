@@ -1,597 +1,250 @@
-import { useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { Preload } from '@react-three/drei'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
+import World from './experience/World'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const projects = [
+const scenes = [
   {
-    index: '01',
-    name: 'AIRBROKER',
-    kind: 'Plataforma de aviação',
-    line: 'Catálogo, busca e presença digital para aeronaves.',
-    className: 'project-blue',
-    mock: (
-      <div className="air-ui">
-        <div className="air-top"><span>AIRBROKER</span><span>EXPLORE AIRCRAFT ↗</span></div>
-        <div className="air-copy">Find your<br />next aircraft.</div>
-        <div className="air-plane">✦</div>
-        <div className="air-meta"><span>MARKETPLACE</span><span>2026</span></div>
-      </div>
-    ),
+    id: 'awakening',
+    label: '00 / WAKE',
+    range: [0, 0.105],
+    eyebrow: 'MYS TECH / INITIALIZING',
+    title: 'O mundo acorda.',
+    copy: 'Role para atravessar a marca.',
   },
   {
-    index: '02',
-    name: 'OSTON CAMBUÍ',
-    kind: 'Clínica especializada',
-    line: 'Uma presença médica limpa, precisa e feita para transmitir confiança.',
-    className: 'project-cream',
-    mock: (
-      <div className="clinic-ui">
-        <div className="clinic-nav"><b>OSTON</b><span>Especialidades &nbsp; Médicos &nbsp; Contato</span></div>
-        <div className="clinic-label">ORTOPEDIA ESPECIALIZADA</div>
-        <div className="clinic-title">Cuidado preciso<br />para cada movimento.</div>
-        <div className="clinic-chip">AGENDAR CONSULTA ↗</div>
-        <div className="clinic-orb" />
-      </div>
-    ),
+    id: 'impact',
+    label: '01 / WORLD',
+    range: [0.105, 0.255],
+    eyebrow: 'SCROLL ≠ PÁGINA',
+    title: 'Agora o scroll move a câmera.',
+    copy: 'Avanço, rotação, profundidade e gravidade passam a fazer parte da navegação.',
   },
   {
-    index: '03',
-    name: 'MYS MONITORING',
-    kind: 'Produto digital',
-    line: 'Dashboard operacional para transformar dado técnico em decisão rápida.',
-    className: 'project-dark',
-    mock: (
-      <div className="monitor-ui">
-        <div className="monitor-head"><span>NETWORK OVERVIEW</span><b>LIVE</b></div>
-        <div className="monitor-grid">
-          <div><small>DISPONIBILIDADE</small><strong>99.91%</strong><i /></div>
-          <div><small>LINKS ATIVOS</small><strong>248</strong><i /></div>
-          <div className="graph"><span /><span /><span /><span /><span /><span /></div>
+    id: 'sites',
+    label: '02 / SITES',
+    range: [0.255, 0.385],
+    eyebrow: 'DIGITAL ARCHITECTURE',
+    title: 'Seu site não é uma página.',
+    copy: 'Interface, movimento e estrutura passam a existir em camadas físicas.',
+  },
+  {
+    id: 'layers',
+    label: '03 / LAYERS',
+    range: [0.385, 0.5],
+    eyebrow: 'FRONT → SECURITY',
+    title: 'Atravessamos cada camada.',
+    copy: 'Front-end, UX/UI, backend, integrações, infraestrutura e segurança.',
+  },
+  {
+    id: 'telecom',
+    label: '04 / TELECOM',
+    range: [0.5, 0.615],
+    eyebrow: 'INFRASTRUCTURE',
+    title: 'A interface vira fibra.',
+    copy: 'BNG, OLT, backbone e conexões formam uma cidade de dados.',
+  },
+  {
+    id: 'automation',
+    label: '05 / FLOW',
+    range: [0.615, 0.715],
+    eyebrow: 'MYS SYSTEM',
+    title: 'Dados começam a circular.',
+    copy: 'Lead, CRM, WhatsApp, automação, banco e dashboard como fluxo vivo.',
+  },
+  {
+    id: 'projects',
+    label: '06 / WORLDS',
+    range: [0.715, 0.9],
+    eyebrow: 'SELECTED WORLDS',
+    title: 'Projetos viram lugares.',
+    copy: 'AirBroker, Oston, Mys Monitoring e Vila Veículos existem como ambientes, não cards.',
+  },
+  {
+    id: 'final',
+    label: '07 / MYS',
+    range: [0.9, 1.001],
+    eyebrow: 'THE LOOP CLOSES',
+    title: 'Tecnologia deveria parecer impossível.',
+    copy: 'Até funcionar.',
+  },
+]
+
+function findScene(progress) {
+  const found = scenes.findIndex((scene) => progress >= scene.range[0] && progress < scene.range[1])
+  return found === -1 ? scenes.length - 1 : found
+}
+
+function SceneHud({ activeScene }) {
+  const scene = scenes[activeScene]
+  const isIntro = activeScene === 0
+  const isFinal = activeScene === scenes.length - 1
+
+  return (
+    <>
+      <div className={'scene-hud ' + (isIntro ? 'scene-hud-intro' : '')} key={scene.id}>
+        <div className="scene-hud-rule" />
+        <span className="scene-hud-eyebrow">{scene.eyebrow}</span>
+        <h1>{scene.title}</h1>
+        <p>{scene.copy}</p>
+      </div>
+
+      {isIntro && (
+        <div className="wake-hint">
+          <span>SCROLL TO WAKE</span>
+          <i />
         </div>
-        <div className="monitor-foot">OPERAÇÃO EM TEMPO REAL</div>
-      </div>
-    ),
-  },
-  {
-    index: '04',
-    name: 'VILA VEÍCULOS',
-    kind: 'Vitrine automotiva',
-    line: 'Uma experiência direta para apresentar estoque sem poluição visual.',
-    className: 'project-red',
-    mock: (
-      <div className="car-ui">
-        <div className="car-brand">VILA<br />VEÍCULOS</div>
-        <div className="car-shape">V</div>
-        <div className="car-data"><b>ENCONTRE O SEU PRÓXIMO CARRO.</b><span>ESTOQUE ATUALIZADO ↗</span></div>
-      </div>
-    ),
-  },
-]
+      )}
 
-const steps = [
-  ['01', 'Diagnóstico', 'Entendemos sua marca, seu público e o que o site precisa fazer — antes de pensar em efeito.'],
-  ['02', 'Direção', 'Definimos linguagem visual, referências, hierarquia e a sensação que a experiência precisa transmitir.'],
-  ['03', 'Construção', 'Design e código avançam juntos para que cada seção já nasça responsiva, rápida e consistente.'],
-  ['04', 'Refinamento', 'Microinterações, movimento, tipografia, performance e detalhes são lapidados até tudo parecer intencional.'],
-  ['05', 'Publicação', 'Entramos no ar com domínio, analytics, SEO técnico e estrutura pronta para evoluir.'],
-]
-
-const faq = [
-  ['Quanto tempo leva?', 'Projetos institucionais costumam ser entregues em cerca de 15 dias após o início e o envio do material necessário.'],
-  ['O site funciona bem no celular?', 'Sim. A experiência é pensada para desktop e mobile desde o começo, não adaptada às pressas no final.'],
-  ['Vocês cuidam de hospedagem e domínio?', 'Sim. A Mys Tech pode manter a estrutura publicada, atualizada e acompanhada para você não precisar administrar a parte técnica.'],
-  ['Eu consigo pedir ajustes?', 'Sim. O refinamento faz parte do processo. O objetivo é publicar somente quando a direção estiver aprovada e consistente com sua marca.'],
-]
-
-function Arrow() {
-  return <span aria-hidden="true">↗</span>
+      {isFinal && (
+        <div className="contact-terminal">
+          <small>TERMINAL / MYS TECH</small>
+          <div className="terminal-actions">
+            <a href="https://wa.me/5535997541933?text=Ol%C3%A1%2C%20quero%20criar%20um%20projeto%20com%20a%20Mys%20Tech." target="_blank" rel="noreferrer">
+              <span>Criar um projeto</span><b>↗</b>
+            </a>
+            <a href="https://wa.me/5535997541933" target="_blank" rel="noreferrer">
+              <span>Falar com a Mys Tech</span><b>↗</b>
+            </a>
+            <a href="#journey-projects">
+              <span>Conhecer nosso trabalho</span><b>↑</b>
+            </a>
+          </div>
+        </div>
+      )}
+    </>
+  )
 }
 
 export default function App() {
-  const root = useRef(null)
+  const progressRef = useRef(0)
+  const pointerRef = useRef({ x: 0, y: 0 })
+  const activeSceneRef = useRef(0)
+  const [activeScene, setActiveScene] = useState(0)
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let lenis
+    const lenis = new Lenis({
+      duration: 1.08,
+      smoothWheel: true,
+      syncTouch: false,
+      wheelMultiplier: 0.82,
+    })
+
+    lenis.on('scroll', ScrollTrigger.update)
+
     let rafId
-
-    if (!reduceMotion) {
-      lenis = new Lenis({
-        duration: 1.05,
-        smoothWheel: true,
-        syncTouch: false,
-        wheelMultiplier: 0.9,
-      })
-
-      const raf = (time) => {
-        lenis.raf(time)
-        rafId = requestAnimationFrame(raf)
-      }
+    const raf = (time) => {
+      lenis.raf(time)
       rafId = requestAnimationFrame(raf)
     }
+    rafId = requestAnimationFrame(raf)
 
-    const ctx = gsap.context(() => {
-      if (reduceMotion) return
+    const trigger = ScrollTrigger.create({
+      trigger: '.scroll-journey',
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate: (self) => {
+        progressRef.current = self.progress
 
-      gsap.from('.hero-line > span', {
-        yPercent: 110,
-        duration: 1.15,
-        stagger: 0.1,
-        ease: 'power4.out',
-        delay: 0.15,
-      })
+        const nextScene = findScene(self.progress)
+        if (nextScene !== activeSceneRef.current) {
+          activeSceneRef.current = nextScene
+          setActiveScene(nextScene)
+        }
 
-      gsap.from('.hero-kicker, .hero-bottom, .hero-stage', {
-        y: 24,
-        opacity: 0,
-        duration: 0.9,
-        stagger: 0.08,
-        ease: 'power3.out',
-        delay: 0.45,
-      })
+        document.documentElement.style.setProperty('--journey-progress', self.progress)
+      },
+    })
 
-      gsap.utils.toArray('.reveal').forEach((item) => {
-        gsap.from(item, {
-          y: 52,
-          opacity: 0,
-          duration: 1,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 86%',
-          },
-        })
-      })
-
-      gsap.utils.toArray('.word-wipe').forEach((item) => {
-        gsap.from(item, {
-          yPercent: 105,
-          duration: 1.05,
-          ease: 'power4.out',
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 84%',
-          },
-        })
-      })
-
-      gsap.to('.hero-stage', {
-        yPercent: 30,
-        rotationZ: 2.5,
-        scale: 0.9,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1,
-        },
-      })
-
-      gsap.to('.hero-title', {
-        yPercent: -10,
-        rotationX: 7,
-        transformPerspective: 900,
-        transformOrigin: '50% 100%',
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.hero',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1,
-        },
-      })
-
-      gsap.set('.physics-scene', {
-        transformPerspective: 1300,
-        transformStyle: 'preserve-3d',
-        rotationX: 9,
-        rotationY: -18,
-        rotationZ: -2,
-      })
-
-      const physics = gsap.timeline({
-        scrollTrigger: {
-          trigger: '.physics-lab',
-          start: 'top top',
-          end: '+=2800',
-          scrub: 1.15,
-          pin: '.physics-sticky',
-          anticipatePin: 1,
-        },
-      })
-
-      physics
-        .to('.physics-scene', {
-          rotationY: 26,
-          rotationX: -10,
-          rotationZ: 1.5,
-          xPercent: -8,
-          scale: 1.04,
-          duration: 1,
-          ease: 'none',
-        })
-        .to('.physics-panel-back', {
-          z: -260,
-          xPercent: 22,
-          rotationY: -18,
-          duration: 1,
-          ease: 'none',
-        }, 0)
-        .to('.physics-panel-front', {
-          z: 210,
-          xPercent: -6,
-          rotationY: 8,
-          duration: 1,
-          ease: 'none',
-        }, 0)
-        .to('.physics-scene', {
-          rotationY: -34,
-          rotationX: 12,
-          rotationZ: -3,
-          xPercent: 10,
-          yPercent: -4,
-          scale: 0.96,
-          duration: 1.2,
-          ease: 'none',
-        })
-        .to('.physics-panel-left', {
-          xPercent: -34,
-          z: 110,
-          rotationY: 28,
-          duration: 1.2,
-          ease: 'none',
-        }, '<')
-        .to('.physics-panel-right', {
-          xPercent: 34,
-          z: 80,
-          rotationY: -24,
-          duration: 1.2,
-          ease: 'none',
-        }, '<')
-        .to('.physics-scene', {
-          rotationY: 0,
-          rotationX: 0,
-          rotationZ: 0,
-          xPercent: 0,
-          yPercent: 0,
-          scale: 1.08,
-          duration: 1,
-          ease: 'none',
-        })
-        .to('.physics-panel-front', {
-          z: 120,
-          rotationY: 0,
-          xPercent: 0,
-          duration: 1,
-          ease: 'none',
-        }, '<')
-        .to('.physics-caption strong', {
-          letterSpacing: '-0.055em',
-          duration: 1,
-          ease: 'none',
-        }, '<')
-
-      const mm = gsap.matchMedia()
-
-      mm.add('(min-width: 901px)', () => {
-        const track = document.querySelector('.work-track')
-        if (!track) return
-
-        const getDistance = () => Math.max(0, track.scrollWidth - window.innerWidth + 72)
-
-        gsap.to(track, {
-          x: () => -getDistance(),
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.work-pin',
-            start: 'top top',
-            end: () => '+=' + getDistance(),
-            scrub: 1,
-            pin: true,
-            invalidateOnRefresh: true,
-          },
-        })
-
-        gsap.fromTo('.project-card',
-          {
-            rotationY: 10,
-            rotationX: 1.5,
-            transformPerspective: 1400,
-            transformOrigin: '50% 50%',
-          },
-          {
-            rotationY: -7,
-            rotationX: -1.5,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: '.work-pin',
-              start: 'top top',
-              end: () => '+=' + getDistance(),
-              scrub: 1,
-            },
-          }
-        )
-      })
-
-      return () => mm.revert()
-    }, root)
-
-    const onPointer = (event) => {
-      if (!root.current) return
-
-      const nx = event.clientX / window.innerWidth - 0.5
-      const ny = event.clientY / window.innerHeight - 0.5
-
-      root.current.style.setProperty('--mx', event.clientX + 'px')
-      root.current.style.setProperty('--my', event.clientY + 'px')
-      root.current.style.setProperty('--tilt-x', (nx * 16).toFixed(2) + 'deg')
-      root.current.style.setProperty('--tilt-y', (ny * -12).toFixed(2) + 'deg')
-      root.current.style.setProperty('--stage-x', (nx * 18).toFixed(1) + 'px')
-      root.current.style.setProperty('--stage-y', (ny * 14).toFixed(1) + 'px')
-    }
-    window.addEventListener('pointermove', onPointer, { passive: true })
+    ScrollTrigger.refresh()
 
     return () => {
-      window.removeEventListener('pointermove', onPointer)
-      ctx.revert()
-      if (rafId) cancelAnimationFrame(rafId)
-      if (lenis) lenis.destroy()
+      trigger.kill()
+      cancelAnimationFrame(rafId)
+      lenis.destroy()
     }
   }, [])
 
-  return (
-    <main ref={root} className="site-shell">
-      <div className="pointer-glow" />
+  useEffect(() => {
+    const onPointerMove = (event) => {
+      pointerRef.current.x = (event.clientX / window.innerWidth) * 2 - 1
+      pointerRef.current.y = -((event.clientY / window.innerHeight) * 2 - 1)
+    }
 
-      <header className="nav">
-        <a className="brand" href="#top" aria-label="Mys Tech">
+    const onPointerLeave = () => {
+      pointerRef.current.x *= 0.25
+      pointerRef.current.y *= 0.25
+    }
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
+    window.addEventListener('pointerleave', onPointerLeave, { passive: true })
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerleave', onPointerLeave)
+    }
+  }, [])
+
+  const showHeader = activeScene > 0
+
+  return (
+    <main className="cinematic-site">
+      <div className="webgl-stage" aria-hidden="true">
+        <Canvas
+          dpr={[1, 1.45]}
+          camera={{ position: [0, 0, 14], fov: 42, near: 0.05, far: 180 }}
+          gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+        >
+          <Suspense fallback={null}>
+            <World progressRef={progressRef} pointerRef={pointerRef} />
+            <Preload all />
+          </Suspense>
+        </Canvas>
+      </div>
+
+      <div className="film-grain" aria-hidden="true" />
+      <div className="vignette" aria-hidden="true" />
+
+      <header className={'world-nav ' + (showHeader ? 'visible' : '')}>
+        <a className="world-brand" href="#journey-start" aria-label="Mys Tech">
           <img src="/mys-logo.svg" alt="" />
           <span>MYS TECH</span>
         </a>
-
-        <nav className="nav-links" aria-label="Navegação principal">
-          <a href="#trabalhos">Projetos</a>
-          <a href="#processo">Processo</a>
-          <a href="#sobre">Por que Mys</a>
-        </nav>
-
-        <a className="nav-cta" href="https://wa.me/5535997541933?text=Ol%C3%A1%2C%20quero%20criar%20um%20site%20com%20a%20Mys%20Tech." target="_blank" rel="noreferrer">
-          Começar projeto <Arrow />
-        </a>
+        <div className="world-status">
+          <span>{scenes[activeScene].label}</span>
+          <i><b /></i>
+          <span>{String(activeScene + 1).padStart(2, '0')} / {String(scenes.length).padStart(2, '0')}</span>
+        </div>
+        <a className="world-contact" href="https://wa.me/5535997541933" target="_blank" rel="noreferrer">CONTATO ↗</a>
       </header>
 
-      <section className="hero" id="top">
-        <div className="hero-grid" />
-        <p className="hero-kicker"><span>●</span> WEBSITES / EXPERIÊNCIAS DIGITAIS</p>
+      <aside className={'scene-index ' + (showHeader ? 'visible' : '')}>
+        {scenes.map((scene, index) => (
+          <a key={scene.id} className={index === activeScene ? 'active' : ''} href={'#journey-' + scene.id}>
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <b>{scene.id}</b>
+          </a>
+        ))}
+      </aside>
 
-        <h1 className="hero-title" aria-label="Se o seu site parece com todos, ele não é seu.">
-          <span className="hero-line"><span>SE O SEU SITE</span></span>
-          <span className="hero-line"><span>PARECE COM TODOS,</span></span>
-          <span className="hero-line accent"><span>ELE NÃO É SEU.</span></span>
-        </h1>
+      <SceneHud activeScene={activeScene} />
 
-        <div className="hero-bottom">
-          <p>Sites sob medida para empresas que querem parecer tão boas online quanto são na vida real.</p>
-          <div className="hero-actions">
-            <a className="button button-solid" href="https://wa.me/5535997541933?text=Ol%C3%A1%2C%20quero%20criar%20um%20site%20com%20a%20Mys%20Tech." target="_blank" rel="noreferrer">Criar meu site <Arrow /></a>
-            <a className="text-link" href="#trabalhos">Ver projetos ↓</a>
-          </div>
-        </div>
-
-        <div className="hero-stage" aria-hidden="true">
-          <div className="stage-window">
-            <div className="stage-bar"><i /><i /><i /><span>mystech.com.br</span></div>
-            <div className="stage-body">
-              <div className="stage-tag">DIGITAL / 2026</div>
-              <div className="stage-word">MYS</div>
-              <div className="stage-panel">
-                <small>DESIGN THAT</small>
-                <strong>FEELS<br />ALIVE.</strong>
-              </div>
-              <div className="stage-index">01 — 04</div>
-            </div>
-          </div>
-          <div className="stage-note">MOVA O MOUSE / ROLE A PÁGINA</div>
-        </div>
-      </section>
-
-      <div className="ticker" aria-hidden="true">
-        <div className="ticker-track">
-          <span>DESIGN QUE NÃO PARECE TEMPLATE</span><b>✦</b>
-          <span>CÓDIGO COM PROPÓSITO</span><b>✦</b>
-          <span>EXPERIÊNCIA QUE FICA NA MEMÓRIA</span><b>✦</b>
-          <span>DESIGN QUE NÃO PARECE TEMPLATE</span><b>✦</b>
-          <span>CÓDIGO COM PROPÓSITO</span><b>✦</b>
-          <span>EXPERIÊNCIA QUE FICA NA MEMÓRIA</span><b>✦</b>
-        </div>
+      <div className="scroll-journey">
+        {scenes.map((scene, index) => (
+          <section
+            id={'journey-' + scene.id}
+            className="journey-marker"
+            key={scene.id}
+            data-scene={index}
+          />
+        ))}
+        <section id="journey-projects" className="journey-project-anchor" />
       </div>
-
-      <section className="physics-lab" aria-label="Experiência em profundidade">
-        <div className="physics-sticky">
-          <div className="physics-copy">
-            <div className="section-label"><span>00</span> MUDANÇA DE PERSPECTIVA</div>
-            <div className="physics-caption">
-              <small>ROLE DEVAGAR ↓</small>
-              <strong>O site muda<br />de ângulo com você.</strong>
-              <p>Não é um slideshow. Os planos ocupam profundidades diferentes e a perspectiva se reorganiza conforme o scroll.</p>
-            </div>
-          </div>
-
-          <div className="physics-viewport" aria-hidden="true">
-            <div className="physics-floor" />
-            <div className="physics-orbit orbit-one" />
-            <div className="physics-orbit orbit-two" />
-
-            <div className="physics-scene">
-              <div className="physics-panel physics-panel-back">
-                <div className="panel-grid" />
-                <span>DEPTH / 03</span>
-                <b>STRUCTURE</b>
-              </div>
-
-              <div className="physics-panel physics-panel-left">
-                <span>01</span>
-                <b>IDENTIDADE</b>
-                <i />
-              </div>
-
-              <div className="physics-panel physics-panel-right">
-                <span>02</span>
-                <b>MOVIMENTO</b>
-                <i />
-              </div>
-
-              <div className="physics-panel physics-panel-front">
-                <div className="physics-browser">
-                  <div className="physics-browser-bar"><i /><i /><i /><span>MYS / EXPERIENCE</span></div>
-                  <div className="physics-browser-body">
-                    <small>WE BUILD DIGITAL PRESENCE</small>
-                    <div className="physics-mys">MYS</div>
-                    <div className="physics-blue-card">
-                      <span>CAMADA 04</span>
-                      <b>DEPTH<br />MATTERS.</b>
-                    </div>
-                    <em>MOVE / SCROLL / FEEL</em>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="physics-axis axis-x">X</div>
-            <div className="physics-axis axis-y">Y</div>
-            <div className="physics-axis axis-z">Z</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="manifesto section-pad" id="sobre">
-        <div className="section-label reveal"><span>01</span> NOSSA IDEIA</div>
-        <div className="manifesto-copy">
-          <div className="clip"><h2 className="word-wipe">Um site bonito</h2></div>
-          <div className="clip"><h2 className="word-wipe muted">não é o objetivo.</h2></div>
-          <div className="clip"><h2 className="word-wipe">Ser lembrado é.</h2></div>
-        </div>
-        <div className="manifesto-aside reveal">
-          <p>A gente mistura direção de arte, interface, movimento e desenvolvimento para criar uma presença digital com personalidade real.</p>
-          <span>SEM TEMPLATE GENÉRICO.<br />SEM EFEITO SÓ POR EFEITO.</span>
-        </div>
-      </section>
-
-      <section className="work-pin" id="trabalhos">
-        <div className="work-head section-pad">
-          <div className="section-label"><span>02</span> PROJETOS SELECIONADOS</div>
-          <p>Arraste com o scroll.</p>
-        </div>
-
-        <div className="work-track">
-          {projects.map((project) => (
-            <article className="project-card" key={project.name}>
-              <div className={'project-visual ' + project.className}>{project.mock}</div>
-              <div className="project-info">
-                <span>{project.index}</span>
-                <div><h3>{project.name}</h3><p>{project.kind}</p></div>
-                <p>{project.line}</p>
-                <b>↗</b>
-              </div>
-            </article>
-          ))}
-          <article className="project-card project-card-cta">
-            <div className="project-end">
-              <small>SEU PROJETO PODE SER O PRÓXIMO.</small>
-              <h3>Vamos fazer algo<br />que não parece pronto.</h3>
-              <a href="https://wa.me/5535997541933?text=Ol%C3%A1%2C%20quero%20criar%20um%20site%20com%20a%20Mys%20Tech." target="_blank" rel="noreferrer">Conversar com a Mys <Arrow /></a>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section className="process section-pad" id="processo">
-        <div className="process-intro reveal">
-          <div className="section-label"><span>03</span> COMO A GENTE CONSTRÓI</div>
-          <h2>Do primeiro rascunho<br />ao último detalhe.</h2>
-          <p>Um processo simples de acompanhar, mas rigoroso no acabamento.</p>
-        </div>
-
-        <div className="steps">
-          {steps.map(([number, title, copy]) => (
-            <article className="step reveal" key={number}>
-              <span>{number}</span>
-              <h3>{title}</h3>
-              <p>{copy}</p>
-              <i>↘</i>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="proof section-pad">
-        <div className="section-label reveal"><span>04</span> O QUE MUDA</div>
-        <div className="proof-grid">
-          <article className="proof-big reveal">
-            <small>NÃO É SOBRE ENCHER A TELA.</small>
-            <h2>É sobre dar uma<br /><em>razão para ficar.</em></h2>
-            <p>Cada escolha visual precisa ajudar a marca a parecer mais clara, mais confiável e mais valiosa.</p>
-          </article>
-
-          <article className="proof-card reveal">
-            <span>01</span><h3>Primeira impressão</h3><p>Uma direção visual própria, em vez de uma composição que poderia pertencer a qualquer empresa.</p>
-          </article>
-          <article className="proof-card reveal">
-            <span>02</span><h3>Movimento com função</h3><p>Transições e microinterações usadas para guiar a leitura e aumentar a sensação de qualidade.</p>
-          </article>
-          <article className="proof-card reveal">
-            <span>03</span><h3>Rápido por dentro</h3><p>Experiência leve, responsiva e preparada para busca, analytics e evolução contínua.</p>
-          </article>
-          <article className="proof-card proof-blue reveal">
-            <span>04</span><h3>Feito para você</h3><p>O projeto nasce da sua marca. Não começa de um template procurando um logo para encaixar.</p>
-          </article>
-        </div>
-      </section>
-
-      <section className="statement">
-        <div className="statement-line"><span>MYS TECH</span><b>✦</b><span>MYS TECH</span><b>✦</b></div>
-        <div className="statement-copy section-pad">
-          <p className="reveal">SITE INSTITUCIONAL / LANDING PAGE / PORTFÓLIO / PRODUTO DIGITAL</p>
-          <h2 className="reveal">Design que parece<br /><span>caro porque é pensado.</span></h2>
-        </div>
-      </section>
-
-      <section className="faq section-pad">
-        <div className="faq-title reveal">
-          <div className="section-label"><span>05</span> PERGUNTAS</div>
-          <h2>Antes de começar.</h2>
-        </div>
-        <div className="faq-list">
-          {faq.map(([question, answer], index) => (
-            <details className="reveal" key={question}>
-              <summary><span>{String(index + 1).padStart(2, '0')}</span><b>{question}</b><i>+</i></summary>
-              <p>{answer}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      <section className="final-cta section-pad">
-        <div className="final-top reveal">
-          <p>VOCÊ JÁ TEM A EMPRESA.<br />AGORA ELA PRECISA PARECER DO TAMANHO CERTO.</p>
-          <span>DISPONÍVEL PARA NOVOS PROJETOS ●</span>
-        </div>
-
-        <a className="final-link" href="https://wa.me/5535997541933?text=Ol%C3%A1%2C%20quero%20criar%20um%20site%20com%20a%20Mys%20Tech." target="_blank" rel="noreferrer">
-          <span>VAMOS</span>
-          <span>CRIAR <i>↗</i></span>
-        </a>
-
-        <footer>
-          <a className="footer-brand" href="#top"><img src="/mys-logo.svg" alt="" /><b>MYS TECH</b></a>
-          <p>WEBSITES • SISTEMAS • EXPERIÊNCIAS DIGITAIS</p>
-          <p>© 2026 MYS TECH</p>
-        </footer>
-      </section>
     </main>
   )
 }
