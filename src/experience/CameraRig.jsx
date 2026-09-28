@@ -1,106 +1,158 @@
-import { useMemo } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useMemo, useRef } from 'react'
+import { PerspectiveCamera, useFrame } from '@react-three/drei'
 import * as THREE from 'three'
 
-const KEYFRAMES = [
-  { t: 0.00, pos: [0, 0, 14], target: [0, 0, 0], roll: 0, fov: 42 },
-  { t: 0.055, pos: [0, 0, 5.5], target: [0, 0, -8], roll: 0, fov: 42 },
-  { t: 0.105, pos: [0, 0, -5], target: [0, 0, -20], roll: 0.02, fov: 43 },
-  { t: 0.165, pos: [4.5, 2.5, -24], target: [0, 0, -39], roll: 0.34, fov: 44 },
-  { t: 0.225, pos: [1.2, 5.3, -44], target: [0, 0, -59], roll: Math.PI / 2, fov: 45 },
-  { t: 0.285, pos: [-3.2, 1.1, -62], target: [0, 0, -78], roll: Math.PI / 2, fov: 44 },
-  { t: 0.345, pos: [-5.5, 0.5, -82], target: [0, 0, -98], roll: 0.9, fov: 42 },
-  { t: 0.425, pos: [0, 0, -105], target: [0, 0, -122], roll: 0.35, fov: 42 },
-  { t: 0.505, pos: [1.5, 0.4, -132], target: [0, 0, -153], roll: 0.08, fov: 43 },
-  { t: 0.575, pos: [0, 0, -157], target: [0, 0, -179], roll: 0, fov: 46 },
-  { t: 0.645, pos: [0, -0.8, -183], target: [0, 0, -202], roll: -0.18, fov: 47 },
-  { t: 0.715, pos: [8.5, 3.4, -211], target: [8, 0, -226], roll: 0.08, fov: 43 },
-  { t: 0.775, pos: [-7.2, 2.2, -232], target: [-7, 0.5, -245], roll: -0.1, fov: 42 },
-  { t: 0.835, pos: [7.4, 1.4, -250], target: [7, 0, -263], roll: 0.08, fov: 42 },
-  { t: 0.885, pos: [-5.5, 0.4, -269], target: [-5, 0, -281], roll: -0.06, fov: 43 },
-  { t: 0.925, pos: [0, 0, -286], target: [0, 0, -301], roll: 0, fov: 40 },
-  { t: 0.965, pos: [0, 0, -308], target: [0, 0, -329], roll: 0, fov: 39 },
-  { t: 1.00, pos: [0, 0, -302], target: [0, 0, -329], roll: 0, fov: 40 },
+const introPoints = [
+  { t: 0.00, pos: [0.1, 0.1, 15.4], target: [0, 0, 0.1], fov: 44, roll: 0 },
+  { t: 0.08, pos: [0.05, 0.05, 14.2], target: [0, 0, 0], fov: 44, roll: 0 },
+  { t: 0.17, pos: [0.02, 0.02, 8.1], target: [0, 0, -0.3], fov: 42, roll: 0 },
+  { t: 0.255, pos: [0, 0, 1.25], target: [0, 0, -4], fov: 46, roll: 0 },
+  { t: 0.34, pos: [0, 0, -14], target: [0, 0, -29], fov: 50, roll: 0.02 },
+  { t: 0.40, pos: [0, 0.25, -24], target: [0, 0, -34], fov: 45, roll: 0.05 },
 ]
 
-const tmpPos = new THREE.Vector3()
-const tmpTarget = new THREE.Vector3()
-const aPos = new THREE.Vector3()
-const bPos = new THREE.Vector3()
-const aTarget = new THREE.Vector3()
-const bTarget = new THREE.Vector3()
+const exitCurve = new THREE.CatmullRomCurve3(
+  [
+    new THREE.Vector3(8.7, 2.4, -38.5),
+    new THREE.Vector3(11.5, 1.3, -43),
+    new THREE.Vector3(14.8, 0.2, -47),
+    new THREE.Vector3(18.4, 0, -50),
+    new THREE.Vector3(24.5, 0, -51),
+    new THREE.Vector3(33, 0, -51),
+    new THREE.Vector3(42, 0, -51),
+  ],
+  false,
+  'catmullrom',
+  0.5,
+)
 
-function smoothstep01(value) {
-  const x = THREE.MathUtils.clamp(value, 0, 1)
+const exitTargetCurve = new THREE.CatmullRomCurve3(
+  [
+    new THREE.Vector3(0, 0, -34),
+    new THREE.Vector3(12, 0, -47),
+    new THREE.Vector3(18, 0, -51),
+    new THREE.Vector3(26, 0, -51),
+    new THREE.Vector3(35, 0, -51),
+    new THREE.Vector3(47, 0, -51),
+  ],
+  false,
+  'catmullrom',
+  0.5,
+)
+
+function clamp01(v) {
+  return THREE.MathUtils.clamp(v, 0, 1)
+}
+
+function smooth(v) {
+  const x = clamp01(v)
   return x * x * (3 - 2 * x)
 }
 
-function sample(progress) {
-  const p = THREE.MathUtils.clamp(progress, 0, 1)
-  let a = KEYFRAMES[0]
-  let b = KEYFRAMES[KEYFRAMES.length - 1]
+function smoother(v) {
+  const x = clamp01(v)
+  return x * x * x * (x * (x * 6 - 15) + 10)
+}
 
-  for (let i = 0; i < KEYFRAMES.length - 1; i += 1) {
-    if (p >= KEYFRAMES[i].t && p <= KEYFRAMES[i + 1].t) {
-      a = KEYFRAMES[i]
-      b = KEYFRAMES[i + 1]
+function sampleIntro(progress) {
+  let a = introPoints[0]
+  let b = introPoints[introPoints.length - 1]
+
+  for (let i = 0; i < introPoints.length - 1; i += 1) {
+    if (progress >= introPoints[i].t && progress <= introPoints[i + 1].t) {
+      a = introPoints[i]
+      b = introPoints[i + 1]
       break
     }
   }
 
-  const span = Math.max(0.0001, b.t - a.t)
-  const local = smoothstep01((p - a.t) / span)
-
-  aPos.set(...a.pos)
-  bPos.set(...b.pos)
-  aTarget.set(...a.target)
-  bTarget.set(...b.target)
-
-  tmpPos.lerpVectors(aPos, bPos, local)
-  tmpTarget.lerpVectors(aTarget, bTarget, local)
-
+  const local = smoother((progress - a.t) / Math.max(0.0001, b.t - a.t))
   return {
-    pos: tmpPos,
-    target: tmpTarget,
-    roll: THREE.MathUtils.lerp(a.roll, b.roll, local),
+    position: new THREE.Vector3().lerpVectors(new THREE.Vector3(...a.pos), new THREE.Vector3(...b.pos), local),
+    target: new THREE.Vector3().lerpVectors(new THREE.Vector3(...a.target), new THREE.Vector3(...b.target), local),
     fov: THREE.MathUtils.lerp(a.fov, b.fov, local),
+    roll: THREE.MathUtils.lerp(a.roll, b.roll, local),
   }
 }
 
-export default function CameraRig({ progressRef, pointerRef }) {
-  const { camera } = useThree()
+function sampleCamera(progress) {
+  if (progress <= 0.4) return sampleIntro(progress)
+
+  if (progress <= 0.655) {
+    const p = smoother((progress - 0.4) / 0.255)
+    const angle = THREE.MathUtils.degToRad(110) * p
+    const radius = 10
+    const center = new THREE.Vector3(0, 0, -34)
+    const position = new THREE.Vector3(
+      Math.sin(angle) * radius,
+      THREE.MathUtils.lerp(0.25, 2.4, Math.sin(p * Math.PI)),
+      center.z + Math.cos(angle) * radius,
+    )
+
+    return {
+      position,
+      target: center,
+      fov: THREE.MathUtils.lerp(45, 39, smooth(Math.sin(p * Math.PI))),
+      roll: THREE.MathUtils.lerp(0.05, Math.PI / 2, smooth((p - 0.18) / 0.82)),
+    }
+  }
+
+  const p = smoother((progress - 0.655) / 0.345)
+  const position = exitCurve.getPointAt(p)
+  const target = exitTargetCurve.getPointAt(Math.min(p, 0.999))
+
+  return {
+    position,
+    target,
+    fov: THREE.MathUtils.lerp(42, 48, smooth((p - 0.35) / 0.45)) - THREE.MathUtils.lerp(0, 8, smooth((p - 0.82) / 0.18)),
+    roll: THREE.MathUtils.lerp(Math.PI / 2, 0, smooth(p / 0.56)),
+  }
+}
+
+export default function CameraRig({ progressRef, pointerRef, reducedMotion = false }) {
+  const positionGroup = useRef()
+  const rotationGroup = useRef()
+  const microGroup = useRef()
+  const cameraRef = useRef()
+
   const dummy = useMemo(() => new THREE.Object3D(), [])
-  const desiredPosition = useMemo(() => new THREE.Vector3(), [])
-  const desiredTarget = useMemo(() => new THREE.Vector3(), [])
+  const desired = useMemo(() => new THREE.Vector3(), [])
+  const target = useMemo(() => new THREE.Vector3(), [])
 
   useFrame((_, delta) => {
-    const progress = progressRef.current
-    const pointer = pointerRef.current
-    const sampled = sample(progress)
+    if (!positionGroup.current || !rotationGroup.current || !microGroup.current || !cameraRef.current) return
 
-    desiredPosition.copy(sampled.pos)
-    desiredTarget.copy(sampled.target)
+    const sampled = sampleCamera(progressRef.current)
+    desired.copy(sampled.position)
+    target.copy(sampled.target)
 
-    const pointerWeight = progress < 0.08 || progress > 0.93 ? 0.18 : 0.55
-    desiredPosition.x += pointer.x * pointerWeight
-    desiredPosition.y += pointer.y * pointerWeight * 0.65
-    desiredTarget.x += pointer.x * pointerWeight * 0.18
-    desiredTarget.y += pointer.y * pointerWeight * 0.12
+    const alpha = 1 - Math.exp(-delta * 9)
+    positionGroup.current.position.lerp(desired, alpha)
 
-    const positionAlpha = 1 - Math.exp(-delta * 6.2)
-    const rotationAlpha = 1 - Math.exp(-delta * 7.4)
-
-    camera.position.lerp(desiredPosition, positionAlpha)
-
-    dummy.position.copy(camera.position)
+    dummy.position.copy(positionGroup.current.position)
     dummy.up.set(0, 1, 0)
-    dummy.lookAt(desiredTarget)
-    dummy.rotateZ(sampled.roll)
-    camera.quaternion.slerp(dummy.quaternion, rotationAlpha)
+    dummy.lookAt(target)
+    dummy.rotateZ(reducedMotion ? sampled.roll * 0.15 : sampled.roll)
+    rotationGroup.current.quaternion.slerp(dummy.quaternion, 1 - Math.exp(-delta * 11))
 
-    camera.fov = THREE.MathUtils.lerp(camera.fov, sampled.fov, 1 - Math.exp(-delta * 5))
-    camera.updateProjectionMatrix()
+    const pointer = pointerRef.current
+    const pointerStrength = reducedMotion ? 0.08 : 0.22
+    microGroup.current.position.x = THREE.MathUtils.lerp(microGroup.current.position.x, pointer.x * pointerStrength, 0.08)
+    microGroup.current.position.y = THREE.MathUtils.lerp(microGroup.current.position.y, pointer.y * pointerStrength * 0.6, 0.08)
+    microGroup.current.rotation.y = THREE.MathUtils.lerp(microGroup.current.rotation.y, -pointer.x * 0.009, 0.08)
+    microGroup.current.rotation.x = THREE.MathUtils.lerp(microGroup.current.rotation.x, pointer.y * 0.005, 0.08)
+
+    cameraRef.current.fov = THREE.MathUtils.lerp(cameraRef.current.fov, reducedMotion ? 43 : sampled.fov, 1 - Math.exp(-delta * 8))
+    cameraRef.current.updateProjectionMatrix()
   })
 
-  return null
+  return (
+    <group ref={positionGroup}>
+      <group ref={rotationGroup}>
+        <group ref={microGroup}>
+          <PerspectiveCamera ref={cameraRef} makeDefault near={0.05} far={220} fov={44} />
+        </group>
+      </group>
+    </group>
+  )
 }
