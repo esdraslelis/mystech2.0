@@ -13,6 +13,7 @@ import {
   ScalePortal,
   AutomationCity,
   ProjectWorlds,
+  TimeFreezeField,
   ManifestoWorld,
   FinalMark,
 } from './Scenes'
@@ -53,6 +54,7 @@ export default function World({ progressRef, pointerRef }) {
       <ScalePortal />
       <AutomationCity progressRef={progressRef} pointerRef={pointerRef} />
       <ProjectWorlds />
+      <TimeFreezeField progressRef={progressRef} />
       <ManifestoWorld />
       <FinalMark progressRef={progressRef} />
     </>
