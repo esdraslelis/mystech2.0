@@ -40,12 +40,13 @@ function makeRockGeometry(radius, detail, seed) {
   return geometry
 }
 
-function Planet({ position, radius, seed, progressRef, rotationFactor = 1, roughness = 0.84, rim = '#335ad7' }) {
+function Planet({ position, radius, seed, progressRef, rotationFactor = 1, roughness = 0.84, rim = '#335ad7', drift = [0, 0, 0] }) {
+  const group = useRef()
   const mesh = useRef()
   const geometry = useMemo(() => makeRockGeometry(radius, 5, seed), [radius, seed])
 
   useFrame(() => {
-    if (!mesh.current) return
+    if (!mesh.current || !group.current) return
     const p = progressRef.current
     const authoredRotation =
       p < 0.15
@@ -56,10 +57,15 @@ function Planet({ position, radius, seed, progressRef, rotationFactor = 1, rough
 
     mesh.current.rotation.y = authoredRotation * rotationFactor
     mesh.current.rotation.x = authoredRotation * 0.15 * Math.sign(rotationFactor)
+
+    const driftP = smoother(range(p, 0.07, 0.24))
+    group.current.position.x = position[0] + drift[0] * driftP
+    group.current.position.y = position[1] + drift[1] * driftP
+    group.current.position.z = position[2] + drift[2] * driftP
   })
 
   return (
-    <group position={position}>
+    <group ref={group} position={position}>
       <mesh ref={mesh} geometry={geometry} castShadow receiveShadow>
         <meshStandardMaterial color="#050608" roughness={roughness} metalness={0.18} />
       </mesh>
@@ -93,11 +99,11 @@ function ScreenInterface({ progressRef }) {
 
     if (title.current) {
       title.current.position.z = 0.43 - 2.0 * p
-      title.current.material.opacity = 1 - smooth(range(p, 0.52, 0.9))
+      title.current.fillOpacity = 1 - smooth(range(p, 0.52, 0.9))
     }
     if (subtitle.current) {
       subtitle.current.position.z = 0.43 - 3.2 * p
-      subtitle.current.material.opacity = 1 - smooth(range(p, 0.45, 0.82))
+      subtitle.current.fillOpacity = 1 - smooth(range(p, 0.45, 0.82))
     }
   })
 
@@ -199,9 +205,9 @@ export function MonitorWorld({ progressRef, pointerRef }) {
         <pointLight position={[0, 0, 3.2]} color="#527cff" intensity={9} distance={13} decay={2} />
       </group>
 
-      <Planet position={[-9.8, -1.0, 5.0]} radius={6.4} seed={1.2} progressRef={progressRef} rotationFactor={0.4} rim="#223d92" />
-      <Planet position={[7.6, 4.1, -6]} radius={4.6} seed={2.7} progressRef={progressRef} rotationFactor={0.7} rim="#3c5ad0" />
-      <Planet position={[-10.5, -4.8, -16]} radius={7.5} seed={4.4} progressRef={progressRef} rotationFactor={0.22} rim="#172a6a" roughness={0.93} />
+      <Planet position={[-9.8, -1.0, 5.0]} radius={6.4} seed={1.2} progressRef={progressRef} rotationFactor={0.4} rim="#223d92" drift={[-1.7, 0.2, 0]} />
+      <Planet position={[7.6, 4.1, -6]} radius={4.6} seed={2.7} progressRef={progressRef} rotationFactor={0.7} rim="#3c5ad0" drift={[1.3, -0.55, 0.25]} />
+      <Planet position={[-10.5, -4.8, -16]} radius={7.5} seed={4.4} progressRef={progressRef} rotationFactor={0.22} rim="#172a6a" roughness={0.93} drift={[0.2, 0.1, -0.15]} />
     </group>
   )
 }
@@ -283,13 +289,23 @@ function DigitalGlobe({ progressRef, pointerRef }) {
 
   useFrame(() => {
     if (!globe.current) return
-    const orbit = smoother(range(progressRef.current, 0.36, 0.655))
+    const progress = progressRef.current
+    const reveal = smoother(range(progress, 0.16, 0.39))
+    const orbit = smoother(range(progress, 0.36, 0.655))
+
+    globe.current.position.x = THREE.MathUtils.lerp(5.4, 0, reveal)
+    globe.current.position.y = THREE.MathUtils.lerp(-2.15, 0, reveal)
+    globe.current.position.z = THREE.MathUtils.lerp(-3.2, -34, reveal)
+
+    const scale = THREE.MathUtils.lerp(0.42, 1, reveal)
+    globe.current.scale.setScalar(scale)
+
     globe.current.rotation.y = THREE.MathUtils.degToRad(8 + orbit * 54) + pointerRef.current.x * 0.012
     globe.current.rotation.x = -0.12 + pointerRef.current.y * 0.006
   })
 
   return (
-    <group ref={globe} position={[0, 0, -34]}>
+    <group ref={globe} position={[5.4, -2.15, -3.2]} scale={0.42}>
       <mesh castShadow receiveShadow>
         <sphereGeometry args={[4, 96, 96]} />
         <meshStandardMaterial color="#050914" roughness={0.66} metalness={0.26} />
