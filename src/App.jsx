@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-const VIDEO_PARTS = Array.from({ length: 19 }, (_, index) => `/media/earth-${String(index).padStart(2, '0')}.b64`)
+const VIDEO_PARTS = Array.from({ length: 21 }, (_, index) => `/media/earth-${String(index).padStart(2, '0')}.b64`)
 
 const chapters = [
   { start: 0.00, end: 0.22 },
