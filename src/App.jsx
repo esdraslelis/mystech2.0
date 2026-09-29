@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-const VIDEO_PARTS = Array.from({ length: 21 }, (_, index) => `/media/earth-${String(index).padStart(2, '0')}.b64`)
+const FRAME_COUNT = 1500
+const FPS = 30
+const VIDEO_PARTS = Array.from({ length: 43 }, (_, index) => `/media/fantasy-${String(index).padStart(2, '0')}.b64`)
 
 const chapters = [
   { start: 0.00, end: 0.22 },
@@ -82,18 +84,19 @@ function CinematicScroll() {
 
     let raf = 0
     let targetTime = 0
-    let lastTime = -1
+    let lastFrame = -1
 
     const render = () => {
       const rect = section.getBoundingClientRect()
       const scrollable = Math.max(1, section.offsetHeight - window.innerHeight)
       const progress = clamp(-rect.top / scrollable)
       const duration = Number.isFinite(video.duration) ? video.duration : 0
-      targetTime = duration > 0 ? progress * Math.max(0, duration - 0.04) : 0
+      const frame = Math.round(progress * (FRAME_COUNT - 1))
+      targetTime = duration > 0 ? Math.min(frame / FPS, Math.max(0, duration - (1 / FPS))) : 0
 
-      if (Math.abs(targetTime - lastTime) > 0.025) {
+      if (frame !== lastFrame) {
         video.currentTime = targetTime
-        lastTime = targetTime
+        lastFrame = frame
       }
 
       sceneRefs.current.forEach((node, index) => {
