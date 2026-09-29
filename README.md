@@ -1,25 +1,38 @@
 # Mys Tech 2.0
 
-Site institucional da Mys Tech, reconstruído com React + Vite, GSAP e Lenis.
+Site institucional e experiência cinematográfica da Mys Tech, construído com **Next.js**, React e animação sincronizada ao scroll.
 
-## Experiência
+## Stack
 
-- Hero editorial com tipografia de grande escala
-- Scroll suave e animações de entrada
-- Portfólio horizontal no desktop e swipe no mobile
-- Seções de processo, diferenciais, FAQ e CTA
-- Layout responsivo
-- SEO básico e metatags sociais
+- Next.js (App Router)
+- React 19
+- GSAP
+- Three.js / React Three Fiber
+- Lenis
+- Sequência cinematográfica de 1500 frames empacotada em `public/media`
 
-## Rodar localmente
+## Desenvolvimento
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Build
+Abra `http://localhost:3000`.
+
+## Produção
 
 ```bash
 npm run build
+npm start
 ```
+
+Requer Node.js 20.9 ou superior.
+
+## Estrutura principal
+
+- `src/app/layout.jsx` — layout global e metadata
+- `src/app/page.jsx` — rota inicial
+- `src/App.jsx` — experiência principal
+- `src/styles.css` — estilos globais
+- `public/media` — mídia da experiência cinematográfica
