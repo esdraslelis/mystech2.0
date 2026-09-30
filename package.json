@@ -4,7 +4,7 @@
   "version": "4.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack && rm -rf dist && mv out dist",
     "start": "next start"
   },
   "engines": {
