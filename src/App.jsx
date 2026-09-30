@@ -4,44 +4,152 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 const FRAME_COUNT = 1500
 const FPS = 30
-const VIDEO_PARTS = Array.from({ length: 43 }, (_, index) => `/media/fantasy-${String(index).padStart(2, '0')}.b64`)
-
-const chapters = [
-  { start: 0.00, end: 0.22 },
-  { start: 0.18, end: 0.43 },
-  { start: 0.39, end: 0.64 },
-  { start: 0.60, end: 0.83 },
-  { start: 0.79, end: 1.00 },
-]
+const VIDEO_PARTS = Array.from(
+  { length: 43 },
+  (_, index) => `/media/fantasy-${String(index).padStart(2, '0')}.b64`,
+)
 
 const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value))
-const smooth = (t) => t * t * (3 - 2 * t)
-
-function sceneVisibility(progress, start, end) {
-  const fade = Math.min(0.055, (end - start) * 0.28)
-  const fadeIn = smooth(clamp((progress - start) / fade))
-  const fadeOut = 1 - smooth(clamp((progress - (end - fade)) / fade))
-  return clamp(Math.min(fadeIn, fadeOut))
+const ease = (value) => {
+  const t = clamp(value)
+  return t * t * (3 - 2 * t)
 }
+
+const chapters = [
+  {
+    start: 0,
+    end: 0.24,
+    eyebrow: 'MYS TECH · EXPERIÊNCIAS DIGITAIS',
+    title: <>Transformamos ideias em <em>experiências.</em></>,
+    text: 'Sites, sistemas, automações e infraestrutura conectados em uma experiência digital clara, elegante e viva.',
+    align: 'center',
+  },
+  {
+    start: 0.19,
+    end: 0.45,
+    eyebrow: '01 · WEBSITES',
+    title: <>Sites que não parecem <em>templates.</em></>,
+    text: 'Interfaces autorais, movimento com propósito e uma navegação pensada para fazer a marca ser percebida — sem excesso visual.',
+    align: 'left',
+  },
+  {
+    start: 0.40,
+    end: 0.66,
+    eyebrow: '02 · SISTEMAS',
+    title: <>Dados complexos.<br /><em>Decisões simples.</em></>,
+    text: 'Dashboards, produtos digitais e ferramentas operacionais organizados para transformar informação em ação.',
+    align: 'right',
+  },
+  {
+    start: 0.61,
+    end: 0.84,
+    eyebrow: '03 · AUTOMAÇÃO & IA',
+    title: <>Menos tarefa manual.<br /><em>Mais fluxo.</em></>,
+    text: 'Integramos sistemas, inteligência artificial e automações para que a tecnologia trabalhe nos bastidores.',
+    align: 'left',
+  },
+  {
+    start: 0.79,
+    end: 1,
+    eyebrow: '04 · INFRAESTRUTURA',
+    title: <>Do pixel à rede.<br /><em>Tudo conectado.</em></>,
+    text: 'Design, software e telecom com a mesma lógica: performance, clareza e estrutura preparada para crescer.',
+    align: 'right',
+  },
+]
+
+const services = [
+  {
+    number: '01',
+    title: 'Websites & experiências',
+    text: 'Sites institucionais, landing pages e experiências interativas com identidade própria, performance e acabamento premium.',
+  },
+  {
+    number: '02',
+    title: 'Sistemas & produtos',
+    text: 'Dashboards, portais, plataformas internas e produtos digitais construídos para processos reais.',
+  },
+  {
+    number: '03',
+    title: 'Automação & IA',
+    text: 'Integrações, agentes, atendimento e fluxos inteligentes para reduzir trabalho manual e acelerar operação.',
+  },
+  {
+    number: '04',
+    title: 'Telecom & infraestrutura',
+    text: 'Observabilidade, redes, BGP, GPON, backbone e consultoria técnica com visão de campo e operação.',
+  },
+]
+
+const projects = [
+  {
+    tag: 'MONITORAMENTO',
+    title: 'Mys Monitoring',
+    text: 'Operação multiempresa com eventos, PPPoE, ONUs, alarmes, indicadores e inteligência operacional em uma única visão.',
+  },
+  {
+    tag: 'WEBSITES',
+    title: 'Experiências sob medida',
+    text: 'Interfaces institucionais e comerciais com direção visual própria, responsividade e interações que acompanham a narrativa.',
+  },
+  {
+    tag: 'AUTOMAÇÃO',
+    title: 'Fluxos inteligentes',
+    text: 'Integrações de atendimento, dados e IA para transformar processos fragmentados em uma jornada contínua.',
+  },
+]
 
 function Arrow() {
   return <span className="arrow" aria-hidden="true">↗</span>
 }
 
-function Brand() {
+function Logo({ dark = false }) {
   return (
-    <a className="brand" href="#inicio" aria-label="Mys Tech — início">
-      <img src="/mys-logo.svg" alt="" />
-      <span>MYS TECH</span>
+    <a className={`brand ${dark ? 'brand-dark' : ''}`} href="#inicio" aria-label="Mys Tech — início">
+      <span className="brand-mark">
+        <img src="/mys-logo.svg" alt="" />
+      </span>
+      <span>Mys Tech</span>
     </a>
   )
 }
 
-function CinematicScroll() {
+function Chapter({ chapter, index, setRef }) {
+  return (
+    <article
+      ref={setRef(index)}
+      className={`chapter chapter-${chapter.align}`}
+      aria-hidden={index === 0 ? undefined : true}
+    >
+      <span className="chapter-eyebrow">{chapter.eyebrow}</span>
+      <h1>{chapter.title}</h1>
+      <p>{chapter.text}</p>
+      {index === 0 ? (
+        <div className="hero-actions">
+          <a className="button button-cream" href="#servicos">
+            Explorar a Mys Tech <Arrow />
+          </a>
+          <span className="scroll-hint">
+            <i />
+            Role para navegar
+          </span>
+        </div>
+      ) : (
+        <a className="chapter-link" href="#servicos">
+          Ver nossas capacidades <Arrow />
+        </a>
+      )}
+    </article>
+  )
+}
+
+function ImmersiveHero() {
   const sectionRef = useRef(null)
   const videoRef = useRef(null)
-  const sceneRefs = useRef([])
-  const progressRef = useRef(null)
+  const chapterRefs = useRef([])
+  const progressBarRef = useRef(null)
+  const stageRef = useRef(null)
+  const filmRef = useRef(null)
   const [videoUrl, setVideoUrl] = useState('')
   const [loadProgress, setLoadProgress] = useState(0)
   const [videoReady, setVideoReady] = useState(false)
@@ -57,22 +165,30 @@ function CinematicScroll() {
           const response = await fetch(VIDEO_PARTS[i], { cache: 'force-cache' })
           if (!response.ok) throw new Error(`Falha ao carregar parte ${i + 1}`)
           parts.push(await response.text())
-          if (!cancelled) setLoadProgress(Math.round(((i + 1) / VIDEO_PARTS.length) * 100))
+          if (!cancelled) {
+            setLoadProgress(Math.round(((i + 1) / VIDEO_PARTS.length) * 100))
+          }
         }
 
         if (cancelled) return
+
         const base64 = parts.join('').replace(/\s/g, '')
         const binary = atob(base64)
         const bytes = new Uint8Array(binary.length)
-        for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+
+        for (let i = 0; i < binary.length; i += 1) {
+          bytes[i] = binary.charCodeAt(i)
+        }
+
         objectUrl = URL.createObjectURL(new Blob([bytes], { type: 'video/mp4' }))
         setVideoUrl(objectUrl)
       } catch (error) {
-        console.error(error)
+        console.error('Não foi possível carregar a experiência:', error)
       }
     }
 
     loadFilm()
+
     return () => {
       cancelled = true
       if (objectUrl) URL.revokeObjectURL(objectUrl)
@@ -84,8 +200,7 @@ function CinematicScroll() {
     const video = videoRef.current
     if (!section || !video || !videoReady) return undefined
 
-    let raf = 0
-    let targetTime = 0
+    let frameId = 0
     let lastFrame = -1
 
     const render = () => {
@@ -93,53 +208,92 @@ function CinematicScroll() {
       const scrollable = Math.max(1, section.offsetHeight - window.innerHeight)
       const progress = clamp(-rect.top / scrollable)
       const duration = Number.isFinite(video.duration) ? video.duration : 0
-      const frame = Math.round(progress * (FRAME_COUNT - 1))
-      targetTime = duration > 0 ? Math.min(frame / FPS, Math.max(0, duration - (1 / FPS))) : 0
+      const targetFrame = Math.round(progress * (FRAME_COUNT - 1))
+      const targetTime = duration > 0
+        ? Math.min(targetFrame / FPS, Math.max(0, duration - (1 / FPS)))
+        : 0
 
-      if (frame !== lastFrame) {
+      if (targetFrame !== lastFrame) {
         video.currentTime = targetTime
-        lastFrame = frame
+        lastFrame = targetFrame
       }
 
-      sceneRefs.current.forEach((node, index) => {
+      chapterRefs.current.forEach((node, index) => {
         if (!node) return
-        const visibility = sceneVisibility(progress, chapters[index].start, chapters[index].end)
+        const chapter = chapters[index]
+        const fadeWindow = Math.min(0.055, (chapter.end - chapter.start) * 0.28)
+        const fadeIn = ease((progress - chapter.start) / fadeWindow)
+        const fadeOut = 1 - ease((progress - (chapter.end - fadeWindow)) / fadeWindow)
+        const visibility = clamp(Math.min(fadeIn, fadeOut))
+
         node.style.opacity = visibility.toFixed(3)
-        node.style.transform = `translate3d(0, ${(1 - visibility) * 26}px, 0)`
-        node.style.pointerEvents = visibility > 0.7 ? 'auto' : 'none'
+        node.style.transform = `translate3d(0, ${(1 - visibility) * 24}px, 0)`
+        node.style.pointerEvents = visibility > 0.76 ? 'auto' : 'none'
       })
 
-      if (progressRef.current) {
-        progressRef.current.style.transform = `scaleY(${Math.max(0.012, progress)})`
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${Math.max(0.015, progress)})`
       }
-      raf = 0
+
+      if (stageRef.current) {
+        const stage = Math.min(chapters.length, Math.floor(progress * chapters.length) + 1)
+        stageRef.current.textContent = String(stage).padStart(2, '0')
+      }
+
+      if (filmRef.current) {
+        const zoom = 1.035 + progress * 0.035
+        filmRef.current.style.transform = `scale(${zoom})`
+      }
+
+      frameId = 0
     }
 
     const requestRender = () => {
-      if (!raf) raf = requestAnimationFrame(render)
+      if (!frameId) frameId = requestAnimationFrame(render)
     }
 
     render()
     window.addEventListener('scroll', requestRender, { passive: true })
     window.addEventListener('resize', requestRender)
+
     return () => {
       window.removeEventListener('scroll', requestRender)
       window.removeEventListener('resize', requestRender)
-      if (raf) cancelAnimationFrame(raf)
+      if (frameId) cancelAnimationFrame(frameId)
     }
   }, [videoReady])
 
-  const setSceneRef = (index) => (node) => {
-    sceneRefs.current[index] = node
+  useEffect(() => {
+    const hero = sectionRef.current
+    const film = filmRef.current
+    if (!hero || !film) return undefined
+
+    const onPointerMove = (event) => {
+      const rect = hero.getBoundingClientRect()
+      if (rect.bottom < 0 || rect.top > window.innerHeight) return
+
+      const x = (event.clientX / window.innerWidth - 0.5) * 2
+      const y = (event.clientY / window.innerHeight - 0.5) * 2
+      film.style.setProperty('--pointer-x', `${x * 8}px`)
+      film.style.setProperty('--pointer-y', `${y * 5}px`)
+    }
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onPointerMove)
+  }, [])
+
+  const setChapterRef = (index) => (node) => {
+    chapterRefs.current[index] = node
   }
 
   return (
-    <section className="cinematic" id="inicio" ref={sectionRef}>
-      <div className="cinematic-sticky">
-        <div className="film" aria-hidden="true">
+    <section className="immersive" id="inicio" ref={sectionRef}>
+      <div className="immersive-sticky">
+        <div className="film-shell" aria-hidden="true">
           {videoUrl && (
             <video
               ref={videoRef}
+              className="film-video"
               src={videoUrl}
               muted
               playsInline
@@ -150,140 +304,223 @@ function CinematicScroll() {
               }}
             />
           )}
-          <div className="film-grade" />
+          <div className="film-motion" ref={filmRef} />
+          <div className="film-wash" />
           <div className="film-vignette" />
-          <div className="film-noise" />
+          <div className="film-grain" />
         </div>
 
         {!videoReady && (
           <div className="loader">
-            <img src="/mys-logo.svg" alt="" />
-            <div className="loader-line"><i style={{ width: `${loadProgress}%` }} /></div>
-            <span>CARREGANDO EXPERIÊNCIA · {loadProgress}%</span>
+            <div className="loader-logo"><img src="/mys-logo.svg" alt="" /></div>
+            <span>Preparando experiência</span>
+            <div className="loader-track"><i style={{ width: `${loadProgress}%` }} /></div>
+            <small>{loadProgress}%</small>
           </div>
         )}
 
-        <header className="topbar">
-          <Brand />
-          <nav>
-            <a href="#capacidades">Capacidades</a>
-            <a href="#manifesto">Método</a>
+        <header className="hero-nav">
+          <Logo dark />
+          <nav className="nav-pill" aria-label="Navegação principal">
+            <a href="#inicio">Início</a>
+            <a href="#servicos">Capacidades</a>
+            <a href="#projetos">Projetos</a>
             <a href="#contato">Contato</a>
           </nav>
-          <a className="nav-cta" href="https://wa.me/5535997541933?text=Olá!%20Quero%20conversar%20sobre%20um%20projeto%20com%20a%20Mys%20Tech." target="_blank" rel="noreferrer">
-            Iniciar projeto <Arrow />
+          <a
+            className="button button-dark nav-button"
+            href="https://wa.me/5535997541933?text=Olá!%20Quero%20conversar%20sobre%20um%20projeto%20com%20a%20Mys%20Tech."
+            target="_blank"
+            rel="noreferrer"
+          >
+            Criar projeto <Arrow />
           </a>
         </header>
 
-        <div className="scroll-index" aria-hidden="true">
-          <span>SCROLL</span>
-          <div className="rail"><i ref={progressRef} /></div>
-          <span>05</span>
+        <div className="hero-copy">
+          {chapters.map((chapter, index) => (
+            <Chapter
+              key={chapter.eyebrow}
+              chapter={chapter}
+              index={index}
+              setRef={setChapterRef}
+            />
+          ))}
         </div>
 
-        <article className="scene scene-hero" ref={setSceneRef(0)}>
-          <p className="kicker">DESIGN · DESENVOLVIMENTO · AUTOMAÇÃO · TELECOM</p>
-          <h1>Construímos o digital<br />que move o <em>real.</em></h1>
-          <p className="lead">Sites, sistemas, automações e infraestrutura técnica reunidos em uma única visão: tecnologia com presença, desempenho e propósito.</p>
-          <div className="scene-actions">
-            <a href="#capacidades" className="pill pill-light">Explorar a Mys Tech <Arrow /></a>
-            <span>Role para navegar</span>
+        <aside className="hero-note">
+          <div className="note-head">
+            <span className="note-dot" />
+            <strong>Mys Core™</strong>
           </div>
-        </article>
-
-        <article className="scene scene-two" ref={setSceneRef(1)}>
-          <span className="chapter">02 — UMA EMPRESA. VÁRIAS CAMADAS.</span>
-          <h2>Não é só um site.<br />É o ecossistema inteiro.</h2>
-          <p>Da primeira impressão do cliente à automação que trabalha por trás. Da interface ao dado. Da operação à rede.</p>
-          <div className="mini-lines">
-            <span><b>01</b> Web & experiência</span>
-            <span><b>02</b> Sistemas & produto</span>
-            <span><b>03</b> Automação & IA</span>
-            <span><b>04</b> Telecom & infraestrutura</span>
+          <p>
+            Um mesmo raciocínio conectando design, software, automação e infraestrutura
+            para reduzir ruído e transformar tecnologia em resultado.
+          </p>
+          <div className="note-actions">
+            <a className="button button-cream button-small" href="#servicos">Descobrir</a>
+            <a className="text-button" href="#projetos">Ver projetos</a>
           </div>
-        </article>
+        </aside>
 
-        <article className="scene scene-three" ref={setSceneRef(2)}>
-          <span className="chapter">03 — COMPLEXIDADE, SEM PESO</span>
-          <h2>O avançado não precisa<br />parecer complicado.</h2>
-          <p>A melhor tecnologia some da frente. Ela responde rápido, orienta a experiência e deixa o usuário pensar apenas no que importa.</p>
-          <div className="metric-row">
-            <div><strong>01</strong><small>Clareza</small></div>
-            <div><strong>02</strong><small>Performance</small></div>
-            <div><strong>03</strong><small>Escala</small></div>
+        <aside className="hero-status">
+          <div className="status-orb"><span /></div>
+          <div className="status-copy">
+            <span>Jornada interativa</span>
+            <strong><b ref={stageRef}>01</b> / 05</strong>
           </div>
-        </article>
+        </aside>
 
-        <article className="scene scene-four" ref={setSceneRef(3)}>
-          <span className="chapter">04 — DA IDEIA À OPERAÇÃO</span>
-          <h2>Uma linguagem para cada<br />problema. A mesma precisão.</h2>
-          <p>Criamos experiências institucionais, produtos digitais e estruturas técnicas pensando no conjunto — não em peças soltas.</p>
-          <a href="#capacidades" className="text-link">Ver o que construímos <Arrow /></a>
-        </article>
-
-        <article className="scene scene-five" ref={setSceneRef(4)}>
-          <span className="chapter">05 — MYS TECH</span>
-          <h2>Seu negócio já existe.<br /><em>Faça ele ser percebido.</em></h2>
-          <p>Design com identidade. Engenharia por dentro. Movimento apenas quando ele tem função.</p>
-          <a href="#contato" className="pill pill-light">Construir algo novo <Arrow /></a>
-        </article>
+        <div className="scroll-progress" aria-hidden="true">
+          <i ref={progressBarRef} />
+        </div>
       </div>
     </section>
   )
 }
 
-const capabilities = [
-  ['01', 'Sites & experiências', 'Sites institucionais, landing pages, e-commerce e experiências interativas que apresentam a marca sem parecer template.'],
-  ['02', 'Sistemas & produtos', 'Interfaces operacionais, dashboards e produtos digitais pensados para transformar processos em fluxo simples.'],
-  ['03', 'Automação & IA', 'Integrações, agentes, WhatsApp e rotinas inteligentes para reduzir tarefas manuais e acelerar atendimento e operação.'],
-  ['04', 'Telecom & infraestrutura', 'Projetos de rede, observabilidade, BGP, GPON, backbone e consultoria técnica com visão de operação real.'],
-]
+function Reveal({ children, className = '' }) {
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const node = ref.current
+    if (!node) return undefined
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          node.classList.add('is-visible')
+          observer.unobserve(node)
+        }
+      },
+      { threshold: 0.16 },
+    )
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
+  return <div ref={ref} className={`reveal ${className}`}>{children}</div>
+}
 
 export default function App() {
   const year = useMemo(() => new Date().getFullYear(), [])
 
   return (
     <main className="site">
-      <CinematicScroll />
+      <ImmersiveHero />
 
-      <section className="statement" id="manifesto">
-        <div className="statement-mark"><img src="/mys-logo.svg" alt="" /></div>
-        <div className="statement-copy">
-          <span className="section-kicker">MYS TECH / MÉTODO</span>
-          <h2>Primeiro entendemos.<br />Depois tiramos o excesso.</h2>
-          <p>Uma boa solução não começa escolhendo animação, framework ou tendência. Começa entendendo o negócio. A partir daí, design e tecnologia entram apenas onde fazem diferença.</p>
-        </div>
-      </section>
+      <section className="intro-section" id="servicos">
+        <Reveal className="intro-grid">
+          <div>
+            <span className="section-label">O QUE FAZEMOS</span>
+            <h2>Da primeira impressão<br />à operação por trás.</h2>
+          </div>
+          <div className="intro-copy">
+            <p>
+              Criamos tecnologia como uma experiência contínua. O visual apresenta,
+              o sistema organiza, a automação acelera e a infraestrutura sustenta.
+            </p>
+            <a className="under-link" href="#projetos">Conhecer projetos <Arrow /></a>
+          </div>
+        </Reveal>
 
-      <section className="capabilities" id="capacidades">
-        <div className="cap-head">
-          <span className="section-kicker">CAPACIDADES</span>
-          <h2>Da tela à infraestrutura.</h2>
-          <p>Uma estrutura técnica ampla para construir presença, produto e operação sem perder coerência no caminho.</p>
-        </div>
-        <div className="cap-list">
-          {capabilities.map(([index, title, description]) => (
-            <article className="cap-item" key={title}>
-              <span>{index}</span>
-              <h3>{title}</h3>
-              <p>{description}</p>
+        <div className="service-list">
+          {services.map((service) => (
+            <Reveal className="service-row" key={service.number}>
+              <span>{service.number}</span>
+              <h3>{service.title}</h3>
+              <p>{service.text}</p>
               <Arrow />
-            </article>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      <section className="contact" id="contato">
-        <span className="section-kicker section-kicker-light">PRÓXIMO PROJETO</span>
-        <div className="contact-grid">
-          <h2>Vamos construir<br /><em>algo que fica.</em></h2>
-          <div>
-            <p>Conte o que você quer transformar. A gente organiza a ideia, define a experiência e constrói a tecnologia.</p>
-            <a className="pill pill-light" href="https://wa.me/5535997541933?text=Olá!%20Quero%20conversar%20sobre%20um%20projeto%20com%20a%20Mys%20Tech." target="_blank" rel="noreferrer">Falar com a Mys Tech <Arrow /></a>
-          </div>
+      <section className="projects-section" id="projetos">
+        <Reveal className="projects-head">
+          <span className="section-label section-label-light">PROJETOS / PRODUTOS</span>
+          <h2>Construído para ser usado.<br /><em>Não só visto.</em></h2>
+          <p>
+            Produtos e experiências que misturam interface, dados e engenharia sem
+            transformar a tecnologia no protagonista.
+          </p>
+        </Reveal>
+
+        <div className="project-grid">
+          {projects.map((project, index) => (
+            <Reveal className="project-card" key={project.title}>
+              <div className="project-visual">
+                <span className="project-index">0{index + 1}</span>
+                <div className="project-orbit">
+                  <i />
+                  <i />
+                  <i />
+                </div>
+              </div>
+              <div className="project-content">
+                <span>{project.tag}</span>
+                <h3>{project.title}</h3>
+                <p>{project.text}</p>
+                <a href="#contato">Conversar sobre algo assim <Arrow /></a>
+              </div>
+            </Reveal>
+          ))}
         </div>
-        <footer>
-          <Brand />
+      </section>
+
+      <section className="method-section">
+        <Reveal className="method-head">
+          <span className="section-label">COMO TRABALHAMOS</span>
+          <h2>Menos efeito.<br />Mais intenção.</h2>
+        </Reveal>
+
+        <div className="method-flow">
+          <Reveal className="method-step">
+            <span>01</span>
+            <strong>Entender</strong>
+            <p>Objetivo, público, processo e o que realmente precisa mudar.</p>
+          </Reveal>
+          <Reveal className="method-step">
+            <span>02</span>
+            <strong>Desenhar</strong>
+            <p>Arquitetura, linguagem visual, experiência e comportamento.</p>
+          </Reveal>
+          <Reveal className="method-step">
+            <span>03</span>
+            <strong>Construir</strong>
+            <p>Desenvolvimento, integrações, performance e responsividade.</p>
+          </Reveal>
+          <Reveal className="method-step">
+            <span>04</span>
+            <strong>Evoluir</strong>
+            <p>Medição, melhoria contínua e novas camadas quando fizer sentido.</p>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="contact-section" id="contato">
+        <Reveal className="contact-inner">
+          <span className="section-label section-label-light">PRÓXIMO PROJETO</span>
+          <h2>Tem uma ideia?<br /><em>Vamos dar forma a ela.</em></h2>
+          <div className="contact-bottom">
+            <p>
+              Conte onde você está e onde quer chegar. A gente desenha o caminho,
+              a experiência e a tecnologia que conecta os dois pontos.
+            </p>
+            <a
+              className="button button-cream contact-button"
+              href="https://wa.me/5535997541933?text=Olá!%20Quero%20conversar%20sobre%20um%20projeto%20com%20a%20Mys%20Tech."
+              target="_blank"
+              rel="noreferrer"
+            >
+              Falar com a Mys Tech <Arrow />
+            </a>
+          </div>
+        </Reveal>
+
+        <footer className="footer">
+          <Logo />
           <span>© {year} Mys Tech</span>
           <span>Pouso Alegre · MG</span>
         </footer>
