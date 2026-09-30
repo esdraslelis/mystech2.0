@@ -102,7 +102,7 @@ a:hover .arrow {
   background:
     radial-gradient(circle at 50% 30%, #f3ead1 0%, #b7c4a5 42%, #183528 100%);
   will-change: transform;
-  transform: translate3d(var(--pointer-x, 0), var(--pointer-y, 0), 0) scale(1.045);
+  transform: translate3d(var(--pointer-x, 0), var(--pointer-y, 0), 0) scale(var(--scroll-scale, 1.045));
   transition: transform 120ms linear;
 }
 
