@@ -242,7 +242,7 @@ function ImmersiveHero() {
 
       if (filmRef.current) {
         const zoom = 1.035 + progress * 0.035
-        filmRef.current.style.transform = `scale(${zoom})`
+        filmRef.current.style.setProperty('--scroll-scale', String(zoom))
       }
 
       frameId = 0
@@ -289,7 +289,7 @@ function ImmersiveHero() {
   return (
     <section className="immersive" id="inicio" ref={sectionRef}>
       <div className="immersive-sticky">
-        <div className="film-shell" aria-hidden="true">
+        <div className="film-shell" ref={filmRef} aria-hidden="true">
           {videoUrl && (
             <video
               ref={videoRef}
@@ -304,7 +304,7 @@ function ImmersiveHero() {
               }}
             />
           )}
-          <div className="film-motion" ref={filmRef} />
+          <div className="film-motion" />
           <div className="film-wash" />
           <div className="film-vignette" />
           <div className="film-grain" />
