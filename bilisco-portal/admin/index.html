@@ -3,66 +3,79 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Bilisco | Leads Wi‑Fi</title>
+  <meta name="theme-color" content="#f7f8fb" />
+  <title>Bilisco | Painel de Leads</title>
+  <link rel="stylesheet" href="../assets.css" />
   <link rel="stylesheet" href="./admin.css" />
 </head>
 <body>
   <main class="shell">
-    <section id="login-view" class="login-card">
-      <div class="brand">
-        <div class="mark">B</div>
-        <div><small>BILISCO WI‑FI</small><h1>Painel de leads</h1></div>
+    <section id="login-view" class="login-wrap">
+      <div class="login-card">
+        <div class="logo-bilisco login-logo" role="img" aria-label="Bilisco"></div>
+        <span class="eyebrow">PAINEL ADMINISTRATIVO</span>
+        <h1>Leads do Wi‑Fi</h1>
+        <p>Acompanhe os cadastros e a evolução dos acessos.</p>
+        <form id="login-form">
+          <label>Usuário<input id="username" autocomplete="username" placeholder="Seu usuário" required /></label>
+          <label>Senha<input id="password" type="password" autocomplete="current-password" placeholder="Sua senha" required /></label>
+          <button type="submit" class="primary">Entrar no painel</button>
+          <span id="login-message" class="message"></span>
+        </form>
+        <footer class="login-footer">
+          <a class="made-by" href="https://mystech.com.br" target="_blank" rel="noopener noreferrer">
+            <span>Desenvolvido por</span><i class="mystech-logo"></i><strong>Mys Tech</strong>
+          </a>
+        </footer>
       </div>
-      <p>Acesse para acompanhar os cadastros do Wi‑Fi.</p>
-      <form id="login-form">
-        <label>Usuário<input id="username" autocomplete="username" required /></label>
-        <label>Senha<input id="password" type="password" autocomplete="current-password" required /></label>
-        <button type="submit">Entrar</button>
-        <span id="login-message" class="message"></span>
-      </form>
     </section>
 
     <section id="dashboard-view" class="dashboard" hidden>
       <header class="topbar">
-        <div>
-          <small>BILISCO WI‑FI</small>
-          <h1>Leads</h1>
-          <p>Cadastros realizados pelo portal de acesso.</p>
+        <div class="brand-line">
+          <div class="logo-bilisco admin-logo" role="img" aria-label="Bilisco"></div>
+          <div><span class="eyebrow">PAINEL WI‑FI</span><h1>Visão de leads</h1><p>Cadastros realizados pelo portal Bilisco.</p></div>
         </div>
-        <button id="logout" class="ghost">Sair</button>
+        <div class="top-actions"><span class="live"><i></i> Atualizado</span><button id="refresh" class="ghost">Atualizar</button><button id="logout" class="ghost danger">Sair</button></div>
       </header>
 
       <section class="metrics">
-        <article><span>Total de leads</span><strong id="total-leads">0</strong></article>
-        <article><span>Hoje</span><strong id="today-leads">0</strong></article>
-        <article><span>Últimos 7 dias</span><strong id="week-leads">0</strong></article>
-        <article><span>Dispositivos únicos</span><strong id="unique-devices">0</strong></article>
+        <article><span>Total geral</span><strong id="total-leads">0</strong><small>desde o início</small></article>
+        <article><span>Hoje</span><strong id="today-leads">0</strong><small>cadastros no dia</small></article>
+        <article><span>Este mês</span><strong id="month-leads">0</strong><small>mês atual</small></article>
+        <article><span>No período</span><strong id="period-leads">0</strong><small>filtro aplicado</small></article>
+        <article><span>Dispositivos únicos</span><strong id="unique-devices">0</strong><small>MACs identificados</small></article>
       </section>
 
-      <section class="panel">
-        <div class="toolbar">
-          <div>
-            <h2>Cadastros recentes</h2>
-            <p id="status-text">Carregando dados...</p>
-          </div>
-          <div class="actions">
-            <input id="search" type="search" placeholder="Buscar nome, celular, IP ou MAC" />
-            <button id="refresh" class="ghost">Atualizar</button>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Cliente</th><th>Celular</th><th>Data / hora</th><th>IP</th><th>MAC</th>
-              </tr>
-            </thead>
-            <tbody id="leads-body"></tbody>
-          </table>
-          <div id="empty" class="empty" hidden>Nenhum lead encontrado.</div>
+      <section class="panel filters-panel">
+        <div class="section-title"><div><h2>Filtros</h2><p>Analise o período que você quiser.</p></div><button id="clear-filters" class="text-btn">Limpar filtros</button></div>
+        <div class="filters">
+          <label><span>Período</span><select id="period-filter"><option value="all">Todos</option><option value="today">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="month">Este mês</option><option value="custom">Personalizado</option></select></label>
+          <label><span>Data inicial</span><input id="start-date" type="date" /></label>
+          <label><span>Data final</span><input id="end-date" type="date" /></label>
+          <label class="search-field"><span>Buscar</span><input id="search" type="search" placeholder="Nome, telefone, IP ou MAC" /></label>
         </div>
       </section>
+
+      <section class="charts-grid">
+        <article class="panel chart-card">
+          <div class="section-title"><div><h2>Leads por dia</h2><p>Últimos 30 dias dentro do filtro.</p></div><span id="daily-summary" class="summary-pill">—</span></div>
+          <div id="daily-chart" class="chart" aria-label="Gráfico de leads por dia"></div>
+        </article>
+        <article class="panel chart-card">
+          <div class="section-title"><div><h2>Leads por mês</h2><p>Últimos 12 meses dentro do filtro.</p></div><span id="monthly-summary" class="summary-pill">—</span></div>
+          <div id="monthly-chart" class="chart" aria-label="Gráfico de leads por mês"></div>
+        </article>
+      </section>
+
+      <section class="panel leads-panel">
+        <div class="section-title table-title"><div><h2>Cadastros</h2><p id="status-text">Carregando dados...</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Celular</th><th>Data / hora</th><th>IP</th><th>MAC</th></tr></thead><tbody id="leads-body"></tbody></table><div id="empty" class="empty" hidden>Nenhum lead encontrado nesse período.</div></div>
+      </section>
+
+      <footer class="dashboard-footer">
+        <a class="made-by" href="https://mystech.com.br" target="_blank" rel="noopener noreferrer"><span>Desenvolvido por</span><i class="mystech-logo"></i><strong>Mys Tech</strong></a>
+      </footer>
     </section>
   </main>
   <script src="./admin.js"></script>
