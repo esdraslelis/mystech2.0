@@ -7,8 +7,10 @@
   const modalTitle = document.getElementById("modal-title");
   const modalContent = document.getElementById("modal-content");
 
-  const params = new URLSearchParams(window.location.search);
+  const SUPABASE_URL = "https://ilccoqqhgrsqgbglyiha.supabase.co";
+  const REGISTER_ENDPOINT = `${SUPABASE_URL}/functions/v1/register-lead`;
 
+  const params = new URLSearchParams(window.location.search);
   const hotspot = {
     mac: params.get("mac") || "",
     ip: params.get("ip") || "",
@@ -43,6 +45,13 @@
     if (d.length <= 2) return d ? `(${d}` : "";
     if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  }
+
+  function buildTrialUrl() {
+    if (!hotspot.linkLogin || !hotspot.mac) return null;
+    const sep = hotspot.linkLogin.includes("?") ? "&" : "?";
+    const dst = hotspot.linkOrig || "https://www.google.com/";
+    return `${hotspot.linkLogin}${sep}dst=${encodeURIComponent(dst)}&username=${encodeURIComponent("T-" + hotspot.mac)}`;
   }
 
   phone.addEventListener("input", () => {
@@ -81,9 +90,7 @@
       lastName: document.getElementById("lastName").value.trim(),
       phone: digits,
       acceptedTerms: true,
-      hotspot,
-      source: "bilisco-wifi",
-      createdAt: new Date().toISOString()
+      hotspot
     };
 
     submit.disabled = true;
@@ -91,7 +98,7 @@
     setMessage("Liberando seu acesso...");
 
     try {
-      const response = await fetch("/api/cadastro", {
+      const response = await fetch(REGISTER_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -99,17 +106,18 @@
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      const data = await response.json();
-
-      if (!data.redirectUrl) {
-        throw new Error("Resposta sem redirectUrl");
+      const trialUrl = buildTrialUrl();
+      if (!trialUrl) {
+        setMessage("Cadastro concluído. Falta a RB enviar os parâmetros de autenticação.", true);
+        return;
       }
 
-      setMessage("Acesso liberado. Conectando...");
-      window.location.assign(data.redirectUrl);
+      setMessage("Cadastro concluído. Conectando...");
+      window.location.assign(trialUrl);
     } catch (error) {
       console.error(error);
       setMessage("Não foi possível liberar o acesso agora. Tente novamente.", true);
+    } finally {
       submit.disabled = false;
       submit.classList.remove("loading");
     }
