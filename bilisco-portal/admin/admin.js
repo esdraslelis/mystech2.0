@@ -63,69 +63,93 @@
     statusText.textContent=filtered.length+" cadastro(s) encontrado(s)";
   }
 
-  function svgBars(items,labels,alt=false){
-    if(!items.some(v=>v>0))return '<div class="chart-empty">Ainda não há dados suficientes nesse período.</div>';
-    const w=720,h=250,padL=34,padR=12,padT=24,padB=34,innerW=w-padL-padR,innerH=h-padT-padB,max=Math.max(...items,1),gap=6,barW=Math.max(4,(innerW/items.length)-gap);
-    let s='<svg viewBox="0 0 '+w+' '+h+'" role="img">';
-    for(let i=0;i<4;i++){const y=padT+(innerH/3)*i;s+='<line class="chart-grid" x1="'+padL+'" x2="'+(w-padR)+'" y1="'+y+'" y2="'+y+'"/>'}
-    items.forEach((v,i)=>{
-      const x=padL+i*(innerW/items.length)+(gap/2),bh=(v/max)*(innerH-8),y=padT+innerH-bh;
-      s+='<g class="chart-point" data-label="'+labels[i]+'" data-value="'+v+'">';
-      s+='<rect class="chart-bar '+(alt?'alt':'')+'" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(bh,1).toFixed(1)+'" rx="4"></rect>';
-      if(v>0)s+='<text class="chart-value" x="'+(x+barW/2).toFixed(1)+'" y="'+Math.max(12,y-5).toFixed(1)+'" text-anchor="middle">'+v+'</text>';
-      s+='</g>';
-      if((items.length<=12||i%5===0||i===items.length-1))s+='<text class="chart-axis" x="'+(x+barW/2).toFixed(1)+'" y="'+(h-10)+'" text-anchor="middle">'+labels[i]+'</text>';
-    });
-    return s+'</svg>';
-  }
-
-  function bindChartTooltip(container){
-    let tooltip=container.querySelector(".chart-tooltip");
-    if(!tooltip){
-      tooltip=document.createElement("div");
-      tooltip.className="chart-tooltip";
-      container.appendChild(tooltip);
-    }
-    container.querySelectorAll(".chart-point").forEach(point=>{
-      const show=e=>{
-        const label=point.dataset.label||"";
-        const value=Number(point.dataset.value||0);
-        tooltip.innerHTML='<strong>'+value+'</strong><span>'+label+'</span><small>'+ (value===1?'1 lead':value+' leads') +'</small>';
-        tooltip.classList.add("show");
-        move(e);
-      };
-      const move=e=>{
-        const rect=container.getBoundingClientRect();
-        const x=e.clientX-rect.left;
-        const y=e.clientY-rect.top;
-        tooltip.style.left=Math.max(8,Math.min(rect.width-118,x+12))+"px";
-        tooltip.style.top=Math.max(8,y-64)+"px";
-      };
-      point.addEventListener("mouseenter",show);
-      point.addEventListener("mousemove",move);
-      point.addEventListener("mouseleave",()=>tooltip.classList.remove("show"));
-    });
+  function htmlBars(items,labels,monthly=false){
+    if(!items.length)return '<div class="chart-empty">Sem dados.</div>';
+    const max=Math.max(...items,1);
+    const cols=items.map((v,i)=>{
+      const pct=v===0?0:Math.max(3,(v/max)*100);
+      const showLabel=monthly || i%5===0 || i===items.length-1;
+      return '<div class="bar-col '+(showLabel?'':'dim-label')+'">'+
+        '<div class="bar-value">'+v+'</div>'+
+        '<div class="bar-track"><div class="bar-fill" style="height:'+pct+'%"></div></div>'+
+        '<div class="bar-label">'+labels[i]+'</div>'+
+        '<div class="bar-tooltip"><strong>'+v+'</strong><span>'+labels[i]+'</span><small>'+(v===1?'1 lead':v+' leads')+'</small></div>'+
+      '</div>';
+    }).join('');
+    return '<div class="bar-chart '+(monthly?'monthly':'daily')+'">'+cols+'</div>';
   }
 
   function renderCharts(filtered){
     const now=new Date(),dailyValues=[],dailyLabels=[];
-    for(let i=29;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i),key=localKey(d);dailyLabels.push(String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0"));dailyValues.push(filtered.filter(x=>localKey(new Date(x.createdAt))===key).length)}
-    $("daily-chart").innerHTML=svgBars(dailyValues,dailyLabels,false);
-    bindChartTooltip($("daily-chart"));
+    for(let i=29;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i),key=localKey(d);
+      dailyLabels.push(String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0"));
+      dailyValues.push(filtered.filter(x=>localKey(new Date(x.createdAt))===key).length);
+    }
+    $("daily-chart").innerHTML=htmlBars(dailyValues,dailyLabels,false);
     const activeDays=dailyValues.filter(v=>v>0).length,total30=dailyValues.reduce((a,b)=>a+b,0),avg=activeDays?total30/activeDays:0;
     $("daily-summary").textContent=avg.toFixed(1).replace(".",",")+" / dia ativo";
 
     const monthValues=[],monthLabels=[];
-    for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1),key=monthKey(d);monthLabels.push(new Intl.DateTimeFormat("pt-BR",{month:"short"}).format(d).replace(".",""));monthValues.push(filtered.filter(x=>monthKey(new Date(x.createdAt))===key).length)}
-    $("monthly-chart").innerHTML=svgBars(monthValues,monthLabels,true);
-    bindChartTooltip($("monthly-chart"));
+    for(let i=11;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1),key=monthKey(d);
+      monthLabels.push(new Intl.DateTimeFormat("pt-BR",{month:"short"}).format(d).replace(".",""));
+      monthValues.push(filtered.filter(x=>monthKey(new Date(x.createdAt))===key).length);
+    }
+    $("monthly-chart").innerHTML=htmlBars(monthValues,monthLabels,true);
     const best=Math.max(...monthValues,0),idx=monthValues.indexOf(best);
     $("monthly-summary").textContent=best?("pico: "+monthLabels[idx]+" · "+best):"sem dados";
   }
 
+  function renderRecurring(filtered){
+    const target=$("recurring-body"), emptyRecurring=$("recurring-empty");
+    const grouped=new Map();
+    filtered.forEach(item=>{
+      const key=(item.phone||item.mac||item.id||"").trim();
+      if(!key)return;
+      if(!grouped.has(key)){
+        grouped.set(key,{firstName:item.firstName,lastName:item.lastName,phone:item.phone||"—",days:new Set(),total:0,last:null});
+      }
+      const g=grouped.get(key);
+      const d=new Date(item.createdAt);
+      if(!Number.isNaN(d.getTime())){
+        g.days.add(localKey(d));
+        if(!g.last||d>g.last)g.last=d;
+      }
+      g.total++;
+      if(item.firstName)g.firstName=item.firstName;
+      if(item.lastName)g.lastName=item.lastName;
+    });
+
+    const rows=[...grouped.values()]
+      .map(g=>({...g,distinctDays:g.days.size}))
+      .sort((a,b)=>b.distinctDays-a.distinctDays||b.total-a.total||(b.last?.getTime()||0)-(a.last?.getTime()||0));
+
+    target.innerHTML="";
+    const maxDays=Math.max(...rows.map(r=>r.distinctDays),1);
+    rows.slice(0,20).forEach((r,index)=>{
+      const tr=document.createElement("tr");
+      const full=[r.firstName,r.lastName].filter(Boolean).join(" ")||"—";
+      const pct=Math.round((r.distinctDays/maxDays)*100);
+      tr.innerHTML='<td><span class="rank-badge '+(index<3?'top':'')+'">'+(index+1)+'</span></td>'+
+        '<td><span class="name"></span><span class="sub">Cliente recorrente</span></td>'+
+        '<td></td><td class="days-count"></td><td></td><td></td>'+
+        '<td><div class="repeat-wrap"><div class="repeat-track"><div class="repeat-fill" style="width:'+pct+'%"></div></div><span class="repeat-pct">'+pct+'%</span></div></td>';
+      tr.children[1].querySelector(".name").textContent=full;
+      tr.children[2].textContent=r.phone;
+      tr.children[3].textContent=r.distinctDays;
+      tr.children[4].textContent=r.total;
+      tr.children[5].textContent=r.last?fmtDate(r.last):"—";
+      target.appendChild(tr);
+    });
+    emptyRecurring.hidden=rows.length!==0;
+    const returning=rows.filter(r=>r.distinctDays>1).length;
+    $("recurring-summary").textContent=returning+" recorrente"+(returning===1?"":"s");
+  }
+
   function render(){
     const filtered=filteredLeads();
-    renderMetrics(filtered);renderCharts(filtered);renderTable(filtered);
+    renderMetrics(filtered);renderCharts(filtered);renderRecurring(filtered);renderTable(filtered);
   }
 
   async function loadLeads(){
