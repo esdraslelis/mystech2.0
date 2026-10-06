@@ -3,41 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#111111" />
+  <meta name="theme-color" content="#fff8f1" />
   <title>Bilisco Wi‑Fi</title>
-  <meta name="description" content="Acesso ao Wi‑Fi do Bilisco." />
+  <meta name="description" content="Acesse o Wi-Fi do Bilisco." />
+  <link rel="stylesheet" href="./assets.css" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="page">
-    <section class="card" aria-labelledby="title">
-      <div class="brand">
-        <div class="brand-mark" aria-hidden="true">B</div>
-        <div>
-          <span class="eyebrow">WI‑FI BILISCO</span>
-          <h1 id="title">Bem-vindo ao Bilisco</h1>
-        </div>
+    <section class="access-card" aria-labelledby="title">
+      <div class="logo-bilisco" role="img" aria-label="Bilisco"></div>
+      <div class="hero-copy">
+        <span class="eyebrow">WI‑FI GRÁTIS</span>
+        <h1 id="title">Conecte-se ao Wi‑Fi do Bilisco</h1>
+        <p class="intro">Preencha seus dados rapidinho para liberar o acesso à internet.</p>
       </div>
-
-      <p class="intro">Preencha seus dados para liberar seu acesso à internet.</p>
 
       <div class="steps" aria-label="Etapas do acesso">
         <span class="step active"><b>1</b> Cadastro</span>
         <span class="line"></span>
         <span class="step"><b>2</b> Confirmação</span>
         <span class="line"></span>
-        <span class="step"><b>3</b> Acesso</span>
+        <span class="step"><b>3</b> Conectado</span>
       </div>
 
       <form id="access-form" novalidate>
         <div class="grid">
           <label>
             <span>Nome</span>
-            <input id="firstName" name="firstName" autocomplete="given-name" maxlength="60" required />
+            <input id="firstName" name="firstName" autocomplete="given-name" maxlength="60" placeholder="Seu nome" required />
           </label>
           <label>
             <span>Sobrenome</span>
-            <input id="lastName" name="lastName" autocomplete="family-name" maxlength="80" required />
+            <input id="lastName" name="lastName" autocomplete="family-name" maxlength="80" placeholder="Seu sobrenome" required />
           </label>
         </div>
 
@@ -53,13 +51,22 @@
 
         <button id="submit" class="primary" type="submit">
           <span class="button-label">Liberar meu acesso</span>
+          <span class="arrow" aria-hidden="true">→</span>
           <span class="spinner" aria-hidden="true"></span>
         </button>
 
         <p id="message" class="message" role="status" aria-live="polite"></p>
       </form>
 
-      <footer>Tecnologia <strong>Mys Tech</strong></footer>
+      <div class="security-note"><span>✓</span> Seus dados são usados somente para o acesso e relacionamento do Bilisco.</div>
+
+      <footer>
+        <a class="made-by" href="https://mystech.com.br" target="_blank" rel="noopener noreferrer" aria-label="Desenvolvido por Mys Tech">
+          <span>Desenvolvido por</span>
+          <i class="mystech-logo" aria-hidden="true"></i>
+          <strong>Mys Tech</strong>
+        </a>
+      </footer>
     </section>
   </main>
 
