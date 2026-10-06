@@ -65,23 +65,60 @@
 
   function svgBars(items,labels,alt=false){
     if(!items.some(v=>v>0))return '<div class="chart-empty">Ainda não há dados suficientes nesse período.</div>';
-    const w=720,h=250,padL=34,padR=12,padT=18,padB=34,innerW=w-padL-padR,innerH=h-padT-padB,max=Math.max(...items,1),gap=6,barW=Math.max(4,(innerW/items.length)-gap);
+    const w=720,h=250,padL=34,padR=12,padT=24,padB=34,innerW=w-padL-padR,innerH=h-padT-padB,max=Math.max(...items,1),gap=6,barW=Math.max(4,(innerW/items.length)-gap);
     let s='<svg viewBox="0 0 '+w+' '+h+'" role="img">';
     for(let i=0;i<4;i++){const y=padT+(innerH/3)*i;s+='<line class="chart-grid" x1="'+padL+'" x2="'+(w-padR)+'" y1="'+y+'" y2="'+y+'"/>'}
-    items.forEach((v,i)=>{const x=padL+i*(innerW/items.length)+(gap/2),bh=(v/max)*(innerH-8),y=padT+innerH-bh;s+='<rect class="chart-bar '+(alt?'alt':'')+'" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="4"><title>'+labels[i]+': '+v+' lead(s)</title></rect>';if(v>0&&items.length<=12)s+='<text class="chart-value" x="'+(x+barW/2).toFixed(1)+'" y="'+Math.max(12,y-5).toFixed(1)+'" text-anchor="middle">'+v+'</text>';if((items.length<=12||i%5===0||i===items.length-1))s+='<text class="chart-axis" x="'+(x+barW/2).toFixed(1)+'" y="'+(h-10)+'" text-anchor="middle">'+labels[i]+'</text>'});
+    items.forEach((v,i)=>{
+      const x=padL+i*(innerW/items.length)+(gap/2),bh=(v/max)*(innerH-8),y=padT+innerH-bh;
+      s+='<g class="chart-point" data-label="'+labels[i]+'" data-value="'+v+'">';
+      s+='<rect class="chart-bar '+(alt?'alt':'')+'" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(bh,1).toFixed(1)+'" rx="4"></rect>';
+      if(v>0)s+='<text class="chart-value" x="'+(x+barW/2).toFixed(1)+'" y="'+Math.max(12,y-5).toFixed(1)+'" text-anchor="middle">'+v+'</text>';
+      s+='</g>';
+      if((items.length<=12||i%5===0||i===items.length-1))s+='<text class="chart-axis" x="'+(x+barW/2).toFixed(1)+'" y="'+(h-10)+'" text-anchor="middle">'+labels[i]+'</text>';
+    });
     return s+'</svg>';
+  }
+
+  function bindChartTooltip(container){
+    let tooltip=container.querySelector(".chart-tooltip");
+    if(!tooltip){
+      tooltip=document.createElement("div");
+      tooltip.className="chart-tooltip";
+      container.appendChild(tooltip);
+    }
+    container.querySelectorAll(".chart-point").forEach(point=>{
+      const show=e=>{
+        const label=point.dataset.label||"";
+        const value=Number(point.dataset.value||0);
+        tooltip.innerHTML='<strong>'+value+'</strong><span>'+label+'</span><small>'+ (value===1?'1 lead':value+' leads') +'</small>';
+        tooltip.classList.add("show");
+        move(e);
+      };
+      const move=e=>{
+        const rect=container.getBoundingClientRect();
+        const x=e.clientX-rect.left;
+        const y=e.clientY-rect.top;
+        tooltip.style.left=Math.max(8,Math.min(rect.width-118,x+12))+"px";
+        tooltip.style.top=Math.max(8,y-64)+"px";
+      };
+      point.addEventListener("mouseenter",show);
+      point.addEventListener("mousemove",move);
+      point.addEventListener("mouseleave",()=>tooltip.classList.remove("show"));
+    });
   }
 
   function renderCharts(filtered){
     const now=new Date(),dailyValues=[],dailyLabels=[];
     for(let i=29;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i),key=localKey(d);dailyLabels.push(String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0"));dailyValues.push(filtered.filter(x=>localKey(new Date(x.createdAt))===key).length)}
     $("daily-chart").innerHTML=svgBars(dailyValues,dailyLabels,false);
+    bindChartTooltip($("daily-chart"));
     const activeDays=dailyValues.filter(v=>v>0).length,total30=dailyValues.reduce((a,b)=>a+b,0),avg=activeDays?total30/activeDays:0;
     $("daily-summary").textContent=avg.toFixed(1).replace(".",",")+" / dia ativo";
 
     const monthValues=[],monthLabels=[];
     for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1),key=monthKey(d);monthLabels.push(new Intl.DateTimeFormat("pt-BR",{month:"short"}).format(d).replace(".",""));monthValues.push(filtered.filter(x=>monthKey(new Date(x.createdAt))===key).length)}
     $("monthly-chart").innerHTML=svgBars(monthValues,monthLabels,true);
+    bindChartTooltip($("monthly-chart"));
     const best=Math.max(...monthValues,0),idx=monthValues.indexOf(best);
     $("monthly-summary").textContent=best?("pico: "+monthLabels[idx]+" · "+best):"sem dados";
   }
