@@ -45,18 +45,53 @@
     $("unique-devices").textContent=new Set(filtered.map(x=>x.mac).filter(Boolean)).size;
   }
 
+  function contactCheckbox(phone,checked){
+    if(!phone||phone==="—")return '<span class="contact-na">—</span>';
+    return '<label class="contact-check" title="Marcar que a Conexão I9 já falou com este cliente">'+
+      '<input class="contact-toggle" type="checkbox" data-phone="'+phone+'" '+(checked?'checked':'')+' />'+
+      '<span></span>'+
+    '</label>';
+  }
+
+  async function setContactStatus(phone,contacted){
+    const normalized=(phone||"").replace(/\D/g,"");
+    if(!normalized)return;
+    document.querySelectorAll('.contact-toggle[data-phone="'+normalized+'"]').forEach(el=>el.disabled=true);
+    try{
+      const r=await fetch(API_BASE+"/contact-status",{
+        method:"POST",
+        headers:{...authHeaders(),"Content-Type":"application/json"},
+        body:JSON.stringify({phone:normalized,contacted})
+      });
+      if(r.status===401){showLogin();return;}
+      if(!r.ok)throw new Error("Falha ao salvar");
+      leads.forEach(item=>{if(item.phone===normalized){item.conexaoI9Contacted=contacted;}});
+      render();
+    }catch(e){
+      statusText.textContent="Não foi possível salvar o status Conexão I9.";
+      render();
+    }
+  }
+
+  function bindContactToggles(){
+    document.querySelectorAll(".contact-toggle").forEach(input=>{
+      input.addEventListener("change",()=>setContactStatus(input.dataset.phone||"",input.checked));
+    });
+  }
+
   function renderTable(filtered){
     tbody.innerHTML="";
     filtered.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).forEach(item=>{
       const tr=document.createElement("tr");
       const full=[item.firstName,item.lastName].filter(Boolean).join(" ")||"—";
-      tr.innerHTML='<td><span class="name"></span><span class="sub"></span></td><td></td><td></td><td></td><td></td>';
+      tr.innerHTML='<td><span class="name"></span><span class="sub"></span></td><td></td><td></td><td></td><td></td><td class="contact-cell"></td>';
       tr.children[0].querySelector(".name").textContent=full;
-      tr.children[0].querySelector(".sub").textContent=item.source||"Bilisco Wi‑Fi";
+      tr.children[0].querySelector(".sub").textContent=item.source||"Bilisco Wi-Fi";
       tr.children[1].textContent=item.phone||"—";
       tr.children[2].textContent=fmtDate(item.createdAt);
       tr.children[3].textContent=item.ip||"—";
       tr.children[4].textContent=item.mac||"—";
+      tr.children[5].innerHTML=contactCheckbox(item.phone||"",!!item.conexaoI9Contacted);
       tbody.appendChild(tr);
     });
     empty.hidden=filtered.length!==0;
@@ -108,7 +143,15 @@
       const key=(item.phone||item.mac||item.id||"").trim();
       if(!key)return;
       if(!grouped.has(key)){
-        grouped.set(key,{firstName:item.firstName,lastName:item.lastName,phone:item.phone||"—",days:new Set(),total:0,last:null});
+        grouped.set(key,{
+          firstName:item.firstName,
+          lastName:item.lastName,
+          phone:item.phone||"—",
+          days:new Set(),
+          total:0,
+          last:null,
+          contacted:!!item.conexaoI9Contacted
+        });
       }
       const g=grouped.get(key);
       const d=new Date(item.createdAt);
@@ -119,6 +162,7 @@
       g.total++;
       if(item.firstName)g.firstName=item.firstName;
       if(item.lastName)g.lastName=item.lastName;
+      if(item.conexaoI9Contacted)g.contacted=true;
     });
 
     const rows=[...grouped.values()]
@@ -133,13 +177,14 @@
       const pct=Math.round((r.distinctDays/maxDays)*100);
       tr.innerHTML='<td><span class="rank-badge '+(index<3?'top':'')+'">'+(index+1)+'</span></td>'+
         '<td><span class="name"></span><span class="sub">Cliente recorrente</span></td>'+
-        '<td></td><td class="days-count"></td><td></td><td></td>'+
+        '<td></td><td class="contact-cell"></td><td class="days-count"></td><td></td><td></td>'+
         '<td><div class="repeat-wrap"><div class="repeat-track"><div class="repeat-fill" style="width:'+pct+'%"></div></div><span class="repeat-pct">'+pct+'%</span></div></td>';
       tr.children[1].querySelector(".name").textContent=full;
       tr.children[2].textContent=r.phone;
-      tr.children[3].textContent=r.distinctDays;
-      tr.children[4].textContent=r.total;
-      tr.children[5].textContent=r.last?fmtDate(r.last):"—";
+      tr.children[3].innerHTML=contactCheckbox(r.phone,r.contacted);
+      tr.children[4].textContent=r.distinctDays;
+      tr.children[5].textContent=r.total;
+      tr.children[6].textContent=r.last?fmtDate(r.last):"—";
       target.appendChild(tr);
     });
     emptyRecurring.hidden=rows.length!==0;
@@ -149,7 +194,7 @@
 
   function render(){
     const filtered=filteredLeads();
-    renderMetrics(filtered);renderCharts(filtered);renderRecurring(filtered);renderTable(filtered);
+    renderMetrics(filtered);renderRecurring(filtered);renderCharts(filtered);renderTable(filtered);bindContactToggles();
   }
 
   async function loadLeads(){
