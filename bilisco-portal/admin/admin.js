@@ -3,7 +3,7 @@
   const TOKEN_KEY="bilisco_admin_token";
   const $=id=>document.getElementById(id);
   const loginView=$("login-view"), dashboardView=$("dashboard-view"), loginForm=$("login-form"), loginMessage=$("login-message");
-  const tbody=$("leads-body"), empty=$("empty"), statusText=$("status-text"), search=$("search"), periodFilter=$("period-filter"), startDate=$("start-date"), endDate=$("end-date");
+  const tbody=$("leads-body"), empty=$("empty"), statusText=$("status-text"), search=$("search"), periodFilter=$("period-filter"), contactFilter=$("contact-filter"), startDate=$("start-date"), endDate=$("end-date");
   let leads=[];
 
   const token=()=>sessionStorage.getItem(TOKEN_KEY)||"";
@@ -33,6 +33,9 @@
         if(start&&d<start)return false;
         if(end&&d>end)return false;
       }
+      const contactMode=contactFilter.value;
+      if(contactMode==="checked"&&!x.conexaoI9Contacted)return false;
+      if(contactMode==="unchecked"&&x.conexaoI9Contacted)return false;
       return true;
     });
   }
@@ -75,7 +78,8 @@
       if(!r.ok)throw new Error("Falha ao salvar");
 
       leads.forEach(item=>{
-        const samePhone=item.phone===normalized;
+        const itemPhone=(item.phone||"").replace(/\D/g,"");
+        const samePhone=itemPhone===normalized;
         const sameMac=normalizedMac && (item.mac||"").toUpperCase()===normalizedMac;
         if(samePhone||sameMac)item.conexaoI9Contacted=contacted;
       });
@@ -228,8 +232,9 @@
 
   $("logout").addEventListener("click",async()=>{try{await fetch(API_BASE+"/logout",{method:"POST",headers:authHeaders()})}catch(_){}showLogin()});
   $("refresh").addEventListener("click",loadLeads);
-  $("clear-filters").addEventListener("click",()=>{periodFilter.value="all";startDate.value="";endDate.value="";search.value="";render()});
+  $("clear-filters").addEventListener("click",()=>{periodFilter.value="all";contactFilter.value="all";startDate.value="";endDate.value="";search.value="";render()});
   periodFilter.addEventListener("change",()=>{const custom=periodFilter.value==="custom";startDate.disabled=!custom;endDate.disabled=!custom;if(!custom){startDate.value="";endDate.value=""}render()});
+  contactFilter.addEventListener("change",render);
   [search,startDate,endDate].forEach(el=>el.addEventListener("input",render));
   startDate.disabled=true;endDate.disabled=true;
 
