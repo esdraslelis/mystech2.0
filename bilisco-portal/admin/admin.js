@@ -45,27 +45,41 @@
     $("unique-devices").textContent=new Set(filtered.map(x=>x.mac).filter(Boolean)).size;
   }
 
-  function contactCheckbox(phone,checked){
+  function contactCheckbox(phone,mac,checked){
     if(!phone||phone==="—")return '<span class="contact-na">—</span>';
+    const safeMac=(mac||"").replace(/"/g,"&quot;");
     return '<label class="contact-check" title="Marcar que a Conexão I9 já falou com este cliente">'+
-      '<input class="contact-toggle" type="checkbox" data-phone="'+phone+'" '+(checked?'checked':'')+' />'+
+      '<input class="contact-toggle" type="checkbox" data-phone="'+phone+'" data-mac="'+safeMac+'" '+(checked?'checked':'')+' />'+
       '<span></span>'+
     '</label>';
   }
 
-  async function setContactStatus(phone,contacted){
+  async function setContactStatus(phone,mac,contacted){
     const normalized=(phone||"").replace(/\D/g,"");
+    const normalizedMac=(mac||"").trim().toUpperCase();
     if(!normalized)return;
-    document.querySelectorAll('.contact-toggle[data-phone="'+normalized+'"]').forEach(el=>el.disabled=true);
+
+    document.querySelectorAll(".contact-toggle").forEach(el=>{
+      const samePhone=(el.dataset.phone||"")===normalized;
+      const sameMac=normalizedMac && (el.dataset.mac||"").toUpperCase()===normalizedMac;
+      if(samePhone||sameMac)el.disabled=true;
+    });
+
     try{
       const r=await fetch(API_BASE+"/contact-status",{
         method:"POST",
         headers:{...authHeaders(),"Content-Type":"application/json"},
-        body:JSON.stringify({phone:normalized,contacted})
+        body:JSON.stringify({phone:normalized,mac:normalizedMac,contacted})
       });
       if(r.status===401){showLogin();return;}
       if(!r.ok)throw new Error("Falha ao salvar");
-      leads.forEach(item=>{if(item.phone===normalized){item.conexaoI9Contacted=contacted;}});
+
+      leads.forEach(item=>{
+        const samePhone=item.phone===normalized;
+        const sameMac=normalizedMac && (item.mac||"").toUpperCase()===normalizedMac;
+        if(samePhone||sameMac)item.conexaoI9Contacted=contacted;
+      });
+
       render();
     }catch(e){
       statusText.textContent="Não foi possível salvar o status Conexão I9.";
@@ -75,7 +89,7 @@
 
   function bindContactToggles(){
     document.querySelectorAll(".contact-toggle").forEach(input=>{
-      input.addEventListener("change",()=>setContactStatus(input.dataset.phone||"",input.checked));
+      input.addEventListener("change",()=>setContactStatus(input.dataset.phone||"",input.dataset.mac||"",input.checked));
     });
   }
 
@@ -91,7 +105,7 @@
       tr.children[2].textContent=fmtDate(item.createdAt);
       tr.children[3].textContent=item.ip||"—";
       tr.children[4].textContent=item.mac||"—";
-      tr.children[5].innerHTML=contactCheckbox(item.phone||"",!!item.conexaoI9Contacted);
+      tr.children[5].innerHTML=contactCheckbox(item.phone||"",item.mac||"",!!item.conexaoI9Contacted);
       tbody.appendChild(tr);
     });
     empty.hidden=filtered.length!==0;
@@ -149,8 +163,7 @@
           phone:item.phone||"—",
           days:new Set(),
           total:0,
-          last:null,
-          contacted:!!item.conexaoI9Contacted
+          last:null
         });
       }
       const g=grouped.get(key);
@@ -162,7 +175,6 @@
       g.total++;
       if(item.firstName)g.firstName=item.firstName;
       if(item.lastName)g.lastName=item.lastName;
-      if(item.conexaoI9Contacted)g.contacted=true;
     });
 
     const rows=[...grouped.values()]
@@ -177,14 +189,13 @@
       const pct=Math.round((r.distinctDays/maxDays)*100);
       tr.innerHTML='<td><span class="rank-badge '+(index<3?'top':'')+'">'+(index+1)+'</span></td>'+
         '<td><span class="name"></span><span class="sub">Cliente recorrente</span></td>'+
-        '<td></td><td class="contact-cell"></td><td class="days-count"></td><td></td><td></td>'+
+        '<td></td><td class="days-count"></td><td></td><td></td>'+
         '<td><div class="repeat-wrap"><div class="repeat-track"><div class="repeat-fill" style="width:'+pct+'%"></div></div><span class="repeat-pct">'+pct+'%</span></div></td>';
       tr.children[1].querySelector(".name").textContent=full;
       tr.children[2].textContent=r.phone;
-      tr.children[3].innerHTML=contactCheckbox(r.phone,r.contacted);
-      tr.children[4].textContent=r.distinctDays;
-      tr.children[5].textContent=r.total;
-      tr.children[6].textContent=r.last?fmtDate(r.last):"—";
+      tr.children[3].textContent=r.distinctDays;
+      tr.children[4].textContent=r.total;
+      tr.children[5].textContent=r.last?fmtDate(r.last):"—";
       target.appendChild(tr);
     });
     emptyRecurring.hidden=rows.length!==0;
