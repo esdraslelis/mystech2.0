@@ -32,17 +32,17 @@
         <div class="grid">
           <label>
             <span>Nome</span>
-            <input id="firstName" name="firstName" autocomplete="given-name" maxlength="60" placeholder="Seu nome" required />
+            <input id="firstName" name="firstName" autocomplete="given-name" minlength="2" maxlength="60" placeholder="Seu nome" required />
           </label>
           <label>
             <span>Sobrenome</span>
-            <input id="lastName" name="lastName" autocomplete="family-name" maxlength="80" placeholder="Seu sobrenome" required />
+            <input id="lastName" name="lastName" autocomplete="family-name" minlength="2" maxlength="80" placeholder="Seu sobrenome" required />
           </label>
         </div>
 
         <label>
           <span>Celular com DDD</span>
-          <input id="phone" name="phone" inputmode="tel" autocomplete="tel" placeholder="(35) 99999-9999" maxlength="16" required />
+          <input id="phone" name="phone" inputmode="tel" autocomplete="tel" placeholder="(35) 99999-9999" maxlength="16" pattern="\\([0-9]{2}\\) 9[0-9]{4}-[0-9]{4}" required />
         </label>
 
         <label class="check">
