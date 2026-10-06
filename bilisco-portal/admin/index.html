@@ -69,6 +69,25 @@
         </article>
       </section>
 
+      <section class="panel recurring-panel">
+        <div class="section-title table-title">
+          <div>
+            <h2>Clientes mais recorrentes</h2>
+            <p>Ranking por quantidade de dias diferentes em que o cliente acessou.</p>
+          </div>
+          <span id="recurring-summary" class="summary-pill">—</span>
+        </div>
+        <div class="table-wrap">
+          <table class="recurring-table">
+            <thead>
+              <tr><th>#</th><th>Cliente</th><th>Celular</th><th>Dias diferentes</th><th>Acessos</th><th>Último acesso</th><th>Recorrência</th></tr>
+            </thead>
+            <tbody id="recurring-body"></tbody>
+          </table>
+          <div id="recurring-empty" class="empty" hidden>Nenhum dado de recorrência nesse período.</div>
+        </div>
+      </section>
+
       <section class="panel leads-panel">
         <div class="section-title table-title"><div><h2>Cadastros</h2><p id="status-text">Carregando dados...</p></div></div>
         <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Celular</th><th>Data / hora</th><th>IP</th><th>MAC</th></tr></thead><tbody id="leads-body"></tbody></table><div id="empty" class="empty" hidden>Nenhum lead encontrado nesse período.</div></div>
