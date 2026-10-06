@@ -1,5 +1,7 @@
 (() => {
   const form = document.getElementById("access-form");
+  const firstName = document.getElementById("firstName");
+  const lastName = document.getElementById("lastName");
   const phone = document.getElementById("phone");
   const submit = document.getElementById("submit");
   const message = document.getElementById("message");
@@ -9,6 +11,13 @@
 
   const SUPABASE_URL = "https://ilccoqqhgrsqgbglyiha.supabase.co";
   const REGISTER_ENDPOINT = `${SUPABASE_URL}/functions/v1/register-lead`;
+  const VALID_DDDS = new Set([
+    "11","12","13","14","15","16","17","18","19","21","22","24","27","28",
+    "31","32","33","34","35","37","38","41","42","43","44","45","46","47",
+    "48","49","51","53","54","55","61","62","63","64","65","66","67","68",
+    "69","71","73","74","75","77","79","81","82","83","84","85","86","87",
+    "88","89","91","92","93","94","95","96","97","98","99"
+  ]);
 
   const params = new URLSearchParams(window.location.search);
   const hotspot = {
@@ -36,8 +45,29 @@
     message.classList.toggle("error", isError);
   }
 
+  function normalizeName(value) {
+    return value.trim().replace(/\s+/g, " ");
+  }
+
+  function validName(value) {
+    const name = normalizeName(value);
+    if (name.length < 2 || name.length > 60) return false;
+    if (!/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(name)) return false;
+    const letters = name.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, "");
+    if (letters.length < 2) return false;
+    if (/^(.)\1+$/i.test(letters)) return false;
+    return true;
+  }
+
   function normalizePhone(value) {
     return value.replace(/\D/g, "").slice(0, 11);
+  }
+
+  function validPhone(digits) {
+    return digits.length === 11 &&
+      VALID_DDDS.has(digits.slice(0, 2)) &&
+      digits.charAt(2) === "9" &&
+      !/^(\d)\1+$/.test(digits);
   }
 
   function formatPhone(value) {
@@ -54,8 +84,16 @@
     return `${hotspot.linkLogin}${sep}dst=${encodeURIComponent(dst)}&username=${encodeURIComponent("T-" + hotspot.mac)}`;
   }
 
+  [firstName, lastName].forEach(input => {
+    input.addEventListener("input", () => {
+      input.value = input.value.replace(/[0-9]/g, "");
+      input.setCustomValidity("");
+    });
+  });
+
   phone.addEventListener("input", () => {
     phone.value = formatPhone(phone.value);
+    phone.setCustomValidity("");
   });
 
   document.querySelectorAll("[data-modal]").forEach(button => {
@@ -73,21 +111,43 @@
     event.preventDefault();
     setMessage("");
 
-    if (!form.checkValidity()) {
-      form.reportValidity();
+    const cleanFirst = normalizeName(firstName.value);
+    const cleanLast = normalizeName(lastName.value);
+    const digits = normalizePhone(phone.value);
+
+    if (!validName(cleanFirst)) {
+      firstName.setCustomValidity("Informe um nome válido, usando apenas letras.");
+      firstName.reportValidity();
+      firstName.setCustomValidity("");
+      firstName.focus();
       return;
     }
 
-    const digits = normalizePhone(phone.value);
-    if (digits.length < 10) {
-      setMessage("Informe um celular com DDD válido.", true);
+    if (!validName(cleanLast)) {
+      lastName.setCustomValidity("Informe um sobrenome válido, usando apenas letras.");
+      lastName.reportValidity();
+      lastName.setCustomValidity("");
+      lastName.focus();
+      return;
+    }
+
+    if (!validPhone(digits)) {
+      phone.setCustomValidity("Informe um celular brasileiro válido com DDD e 9 dígitos.");
+      phone.reportValidity();
+      phone.setCustomValidity("");
       phone.focus();
       return;
     }
 
+    if (!document.getElementById("terms").checked) {
+      setMessage("Você precisa aceitar os Termos de Uso e a Política de Privacidade.", true);
+      document.getElementById("terms").focus();
+      return;
+    }
+
     const payload = {
-      firstName: document.getElementById("firstName").value.trim(),
-      lastName: document.getElementById("lastName").value.trim(),
+      firstName: cleanFirst,
+      lastName: cleanLast,
       phone: digits,
       acceptedTerms: true,
       hotspot
@@ -104,6 +164,10 @@
         body: JSON.stringify(payload)
       });
 
+      if (response.status === 400) {
+        setMessage("Confira seus dados. Nome, sobrenome ou celular não parecem válidos.", true);
+        return;
+      }
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const trialUrl = buildTrialUrl();
