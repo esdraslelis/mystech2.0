@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Bilisco | Leads Wi‑Fi</title>
+  <link rel="stylesheet" href="./admin.css" />
+</head>
+<body>
+  <main class="shell">
+    <section id="login-view" class="login-card">
+      <div class="brand">
+        <div class="mark">B</div>
+        <div><small>BILISCO WI‑FI</small><h1>Painel de leads</h1></div>
+      </div>
+      <p>Acesse para acompanhar os cadastros do Wi‑Fi.</p>
+      <form id="login-form">
+        <label>Usuário<input id="username" autocomplete="username" required /></label>
+        <label>Senha<input id="password" type="password" autocomplete="current-password" required /></label>
+        <button type="submit">Entrar</button>
+        <span id="login-message" class="message"></span>
+      </form>
+    </section>
+
+    <section id="dashboard-view" class="dashboard" hidden>
+      <header class="topbar">
+        <div>
+          <small>BILISCO WI‑FI</small>
+          <h1>Leads</h1>
+          <p>Cadastros realizados pelo portal de acesso.</p>
+        </div>
+        <button id="logout" class="ghost">Sair</button>
+      </header>
+
+      <section class="metrics">
+        <article><span>Total de leads</span><strong id="total-leads">0</strong></article>
+        <article><span>Hoje</span><strong id="today-leads">0</strong></article>
+        <article><span>Últimos 7 dias</span><strong id="week-leads">0</strong></article>
+        <article><span>Dispositivos únicos</span><strong id="unique-devices">0</strong></article>
+      </section>
+
+      <section class="panel">
+        <div class="toolbar">
+          <div>
+            <h2>Cadastros recentes</h2>
+            <p id="status-text">Carregando dados...</p>
+          </div>
+          <div class="actions">
+            <input id="search" type="search" placeholder="Buscar nome, celular, IP ou MAC" />
+            <button id="refresh" class="ghost">Atualizar</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th><th>Celular</th><th>Data / hora</th><th>IP</th><th>MAC</th>
+              </tr>
+            </thead>
+            <tbody id="leads-body"></tbody>
+          </table>
+          <div id="empty" class="empty" hidden>Nenhum lead encontrado.</div>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="./admin.js"></script>
+</body>
+</html>
