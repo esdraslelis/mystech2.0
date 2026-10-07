@@ -55,21 +55,23 @@ button,input{font:inherit}
 }
 .partner{
   display:flex;
+  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:7px;
-  margin-top:3px;
+  gap:4px;
+  margin-top:4px;
   color:#a39a95;
   font-size:9px;
+  line-height:1;
 }
 .partner-logo{
-  width:54px;
-  height:23px;
+  width:62px;
+  height:28px;
   background-image:var(--bilisco-logo);
   background-size:contain;
   background-position:center;
   background-repeat:no-repeat;
-  opacity:.82;
+  opacity:.85;
 }
 .hero-copy{text-align:center;margin-bottom:18px}
 .eyebrow{
@@ -214,8 +216,8 @@ dialog::backdrop{background:rgba(20,20,22,.48);backdrop-filter:blur(4px)}
   .brand{margin:0 0 10px}
   .provider-label{font-size:6.5px;margin-bottom:4px}
   .i9-logo{width:185px;max-width:68%}
-  .partner{font-size:7.5px;margin-top:1px}
-  .partner-logo{width:45px;height:19px}
+  .partner{font-size:7.5px;gap:3px;margin-top:2px}
+  .partner-logo{width:50px;height:22px}
   .hero-copy{margin-bottom:11px}
   .eyebrow{font-size:7.5px;padding:4px 8px}
   h1{font-size:24px;margin-top:7px}
