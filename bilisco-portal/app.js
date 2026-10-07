@@ -13,6 +13,9 @@
   const modalTitle = document.getElementById("modal-title");
   const modalContent = document.getElementById("modal-content");
   const successToast = document.getElementById("success-toast");
+  const accessCard = document.querySelector(".access-card");
+  const connectedOffer = document.getElementById("connected-offer");
+  const continueBrowsing = document.getElementById("continue-browsing");
 
   const REGISTER_ENDPOINT = "https://ilccoqqhgrsqgbglyiha.supabase.co/functions/v1/register-lead";
   const PENDING_KEY = "bilisco-pending-lead";
@@ -142,9 +145,25 @@
 
   async function handleConnectedReturn() {
     if (params.get("connected") !== "1") return;
+
+    let originalDestination = "";
+    try {
+      const pending = JSON.parse(localStorage.getItem(PENDING_KEY) || "null");
+      originalDestination = pending?.hotspot?.linkOrig || "";
+    } catch (error) {
+      console.warn("Não foi possível recuperar o destino original.", error);
+    }
+
+    if (continueBrowsing && originalDestination && /^https?:\/\//i.test(originalDestination)) {
+      continueBrowsing.href = originalDestination;
+    }
+
     form.style.display = "none";
     setMessage("");
-    showSuccess();
+    successToast?.classList.remove("show");
+    successToast?.setAttribute("aria-hidden", "true");
+    accessCard?.classList.add("is-connected");
+    connectedOffer?.setAttribute("aria-hidden", "false");
     await savePendingLead();
   }
 
