@@ -10,35 +10,21 @@
   const modalContent = document.getElementById("modal-content");
   const successToast = document.getElementById("success-toast");
 
-  const SUPABASE_URL = "https://ilccoqqhgrsqgbglyiha.supabase.co";
-  const REGISTER_ENDPOINT = `${SUPABASE_URL}/functions/v1/register-lead`;
-  const VALID_DDDS = new Set([
-    "11","12","13","14","15","16","17","18","19","21","22","24","27","28",
-    "31","32","33","34","35","37","38","41","42","43","44","45","46","47",
-    "48","49","51","53","54","55","61","62","63","64","65","66","67","68",
-    "69","71","73","74","75","77","79","81","82","83","84","85","86","87",
-    "88","89","91","92","93","94","95","96","97","98","99"
-  ]);
+  const REGISTER_ENDPOINT = "https://ilccoqqhgrsqgbglyiha.supabase.co/functions/v1/register-lead";
+  const PENDING_KEY = "bilisco-pending-lead";
+  const VALID_DDDS = new Set(["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"]);
 
   const params = new URLSearchParams(window.location.search);
   const hotspot = {
     mac: params.get("mac") || "",
     ip: params.get("ip") || "",
     linkLogin: params.get("link-login") || params.get("link-login-only") || "",
-    linkOrig: params.get("link-orig") || "",
-    chapId: params.get("chap-id") || "",
-    chapChallenge: params.get("chap-challenge") || ""
+    linkOrig: params.get("link-orig") || ""
   };
 
   const legal = {
-    terms: {
-      title: "Termos de Uso",
-      html: "<p>O acesso ao Wi-Fi do Bilisco é destinado aos clientes e visitantes do estabelecimento. O usuário se compromete a utilizar a conexão de forma lícita, responsável e sem prejudicar a rede ou terceiros.</p><p>O acesso poderá ser limitado ou interrompido para manutenção, segurança, uso abusivo ou necessidade operacional.</p>"
-    },
-    privacy: {
-      title: "Política de Privacidade",
-      html: "<p>Ao solicitar o acesso, você informa nome, sobrenome e celular. Esses dados podem ser utilizados para controle de acesso, segurança da rede e relacionamento do Bilisco com seus clientes, conforme a legislação aplicável.</p><p>Os dados não devem ser expostos publicamente e devem ser protegidos pelos sistemas responsáveis pelo armazenamento.</p>"
-    }
+    terms: { title: "Termos de Uso", html: "<p>O acesso ao Wi-Fi do Bilisco é destinado aos clientes e visitantes do estabelecimento. O usuário se compromete a utilizar a conexão de forma lícita, responsável e sem prejudicar a rede ou terceiros.</p><p>O acesso poderá ser limitado ou interrompido para manutenção, segurança, uso abusivo ou necessidade operacional.</p>" },
+    privacy: { title: "Política de Privacidade", html: "<p>Ao solicitar o acesso, você informa nome, sobrenome e celular. Esses dados podem ser utilizados para controle de acesso, segurança da rede e relacionamento do Bilisco com seus clientes, conforme a legislação aplicável.</p><p>Os dados não devem ser expostos publicamente e devem ser protegidos pelos sistemas responsáveis pelo armazenamento.</p>" }
   };
 
   function setMessage(text, isError = false) {
@@ -46,37 +32,23 @@
     message.classList.toggle("error", isError);
   }
 
-  function showSuccessToast() {
-    if (!successToast) return;
-    successToast.setAttribute("aria-hidden", "false");
-    successToast.classList.add("show");
+  function showSuccess(text = "Seu acesso foi liberado. Boa navegação.") {
+    const small = successToast?.querySelector("small");
+    if (small) small.textContent = text;
+    successToast?.setAttribute("aria-hidden", "false");
+    successToast?.classList.add("show");
   }
 
-  function normalizeName(value) {
-    return value.trim().replace(/\s+/g, " ");
-  }
-
+  function normalizeName(value) { return value.trim().replace(/\s+/g, " "); }
   function validName(value) {
     const name = normalizeName(value);
     if (name.length < 2 || name.length > 60) return false;
     if (!/^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(name)) return false;
     const letters = name.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, "");
-    if (letters.length < 2) return false;
-    if (/^(.)\1+$/i.test(letters)) return false;
-    return true;
+    return letters.length >= 2 && !/^(.)\1+$/i.test(letters);
   }
-
-  function normalizePhone(value) {
-    return value.replace(/\D/g, "").slice(0, 11);
-  }
-
-  function validPhone(digits) {
-    return digits.length === 11 &&
-      VALID_DDDS.has(digits.slice(0, 2)) &&
-      digits.charAt(2) === "9" &&
-      !/^(\d)\1+$/.test(digits);
-  }
-
+  function normalizePhone(value) { return value.replace(/\D/g, "").slice(0, 11); }
+  function validPhone(digits) { return digits.length === 11 && VALID_DDDS.has(digits.slice(0, 2)) && digits.charAt(2) === "9" && !/^(\d)\1+$/.test(digits); }
   function formatPhone(value) {
     const d = normalizePhone(value);
     if (d.length <= 2) return d ? `(${d}` : "";
@@ -84,139 +56,93 @@
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
   }
 
+  async function savePendingLead() {
+    const raw = localStorage.getItem(PENDING_KEY);
+    if (!raw) return;
+    try {
+      const response = await fetch(REGISTER_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: raw,
+        keepalive: true
+      });
+      if (response.ok || response.status === 409) localStorage.removeItem(PENDING_KEY);
+    } catch (error) {
+      console.warn("Lead pendente; nova tentativa será feita quando houver internet.", error);
+    }
+  }
+
   function submitHotspotLogin() {
     if (!hotspot.linkLogin) return false;
-
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = hotspot.linkLogin;
-    form.style.display = "none";
+    const loginForm = document.createElement("form");
+    loginForm.method = "POST";
+    loginForm.action = hotspot.linkLogin;
+    loginForm.style.display = "none";
 
     const fields = {
       username: "bilisco-portal",
       password: "BILISCO2026",
-      dst: hotspot.linkOrig || "http://neverssl.com/"
+      dst: `${window.location.origin}${window.location.pathname}?connected=1`
     };
 
     Object.entries(fields).forEach(([name, value]) => {
       const input = document.createElement("input");
       input.type = "hidden";
       input.name = name;
-      input.value = value;
-      form.appendChild(input);
+      loginForm.appendChild(input);
     });
-
-    document.body.appendChild(form);
-    form.submit();
+    document.body.appendChild(loginForm);
+    loginForm.submit();
     return true;
   }
 
-  [firstName, lastName].forEach(input => {
-    input.addEventListener("input", () => {
-      input.value = input.value.replace(/[0-9]/g, "");
-      input.setCustomValidity("");
-    });
-  });
+  [firstName, lastName].forEach(input => input.addEventListener("input", () => {
+    input.value = input.value.replace(/[0-9]/g, "");
+    input.setCustomValidity("");
+  }));
+  phone.addEventListener("input", () => { phone.value = formatPhone(phone.value); phone.setCustomValidity(""); });
 
-  phone.addEventListener("input", () => {
-    phone.value = formatPhone(phone.value);
-    phone.setCustomValidity("");
-  });
-
-  document.querySelectorAll("[data-modal]").forEach(button => {
-    button.addEventListener("click", () => {
-      const item = legal[button.dataset.modal];
-      modalTitle.textContent = item.title;
-      modalContent.innerHTML = item.html;
-      modal.showModal();
-    });
-  });
-
+  document.querySelectorAll("[data-modal]").forEach(button => button.addEventListener("click", () => {
+    const item = legal[button.dataset.modal];
+    modalTitle.textContent = item.title;
+    modalContent.innerHTML = item.html;
+    modal.showModal();
+  }));
   document.getElementById("close-modal").addEventListener("click", () => modal.close());
 
-  form.addEventListener("submit", async event => {
+  form.addEventListener("submit", event => {
     event.preventDefault();
     setMessage("");
-
     const cleanFirst = normalizeName(firstName.value);
     const cleanLast = normalizeName(lastName.value);
     const digits = normalizePhone(phone.value);
 
-    if (!validName(cleanFirst)) {
-      firstName.setCustomValidity("Informe um nome válido, usando apenas letras.");
-      firstName.reportValidity();
-      firstName.setCustomValidity("");
-      firstName.focus();
-      return;
-    }
+    if (!validName(cleanFirst)) { firstName.setCustomValidity("Informe um nome válido, usando apenas letras."); firstName.reportValidity(); firstName.setCustomValidity(""); firstName.focus(); return; }
+    if (!validName(cleanLast)) { lastName.setCustomValidity("Informe um sobrenome válido, usando apenas letras."); lastName.reportValidity(); lastName.setCustomValidity(""); lastName.focus(); return; }
+    if (!validPhone(digits)) { phone.setCustomValidity("Informe um celular brasileiro válido com DDD e 9 dígitos."); phone.reportValidity(); phone.setCustomValidity(""); phone.focus(); return; }
+    if (!document.getElementById("terms").checked) { setMessage("Aceite os Termos de Uso e a Política de Privacidade para continuar.", true); return; }
+    if (!hotspot.linkLogin) { setMessage("Reconecte ao Wi-Fi para iniciar uma nova sessão.", true); return; }
 
-    if (!validName(cleanLast)) {
-      lastName.setCustomValidity("Informe um sobrenome válido, usando apenas letras.");
-      lastName.reportValidity();
-      lastName.setCustomValidity("");
-      lastName.focus();
-      return;
-    }
-
-    if (!validPhone(digits)) {
-      phone.setCustomValidity("Informe um celular brasileiro válido com DDD e 9 dígitos.");
-      phone.reportValidity();
-      phone.setCustomValidity("");
-      phone.focus();
-      return;
-    }
-
-    if (!document.getElementById("terms").checked) {
-      setMessage("Você precisa aceitar os Termos de Uso e a Política de Privacidade.", true);
-      document.getElementById("terms").focus();
-      return;
-    }
-
-    const payload = {
-      firstName: cleanFirst,
-      lastName: cleanLast,
-      phone: digits,
-      acceptedTerms: true,
-      hotspot
-    };
-
+    localStorage.setItem(PENDING_KEY, JSON.stringify({ firstName: cleanFirst, lastName: cleanLast, phone: digits, acceptedTerms: true, hotspot }));
     submit.disabled = true;
     submit.classList.add("loading");
-    setMessage("Liberando seu acesso...");
+    setMessage("Conectando você ao Wi-Fi...");
 
-    try {
-      const response = await fetch(REGISTER_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.status === 400) {
-        setMessage("Confira seus dados. Nome, sobrenome ou celular não parecem válidos.", true);
-        return;
-      }
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      if (!hotspot.linkLogin) {
-        setMessage("Cadastro concluído, mas o ponto de acesso não enviou o endereço de autenticação.", true);
-        return;
-      }
-
-      setMessage("Cadastro concluído. Preparando sua conexão...");
-      showSuccessToast();
-      await new Promise(resolve => setTimeout(resolve, 900));
-
-      const submitted = submitHotspotLogin();
-      if (!submitted) {
-        successToast?.classList.remove("show");
-        setMessage("Não foi possível concluir a autenticação no Wi-Fi. Reconecte e tente novamente.", true);
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage("Não foi possível liberar o acesso agora. Tente novamente.", true);
-    } finally {
+    if (!submitHotspotLogin()) {
       submit.disabled = false;
       submit.classList.remove("loading");
+      setMessage("Não foi possível iniciar a autenticação. Reconecte ao Wi-Fi e tente novamente.", true);
     }
   });
+
+  async function handleConnectedReturn() {
+    if (params.get("connected") !== "1") return;
+    form.style.display = "none";
+    setMessage("");
+    showSuccess();
+    await savePendingLead();
+  }
+
+  window.addEventListener("online", savePendingLead);
+  handleConnectedReturn();
 })();
