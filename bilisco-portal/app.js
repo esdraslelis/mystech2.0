@@ -16,6 +16,8 @@
   const accessCard = document.querySelector(".access-card");
   const connectedOffer = document.getElementById("connected-offer");
   const continueBrowsing = document.getElementById("continue-browsing");
+  const androidConnect = document.getElementById("android-connect");
+  const isAndroid = /Android/i.test(navigator.userAgent);
 
   const REGISTER_ENDPOINT = "https://ilccoqqhgrsqgbglyiha.supabase.co/functions/v1/register-lead";
   const PENDING_KEY = "bilisco-pending-lead";
@@ -132,6 +134,22 @@
     if (!hotspot.linkLogin) { setMessage("Reconecte ao Wi-Fi para iniciar uma nova sessão.", true); return; }
 
     localStorage.setItem(PENDING_KEY, JSON.stringify({ firstName: cleanFirst, lastName: cleanLast, phone: digits, acceptedTerms: true, hotspot }));
+
+    if (isAndroid) {
+      form.style.display = "none";
+      setMessage("");
+      accessCard?.classList.add("is-connected", "android-preauth");
+      connectedOffer?.setAttribute("aria-hidden", "false");
+
+      const kicker = connectedOffer?.querySelector(".connected-kicker");
+      const heading = connectedOffer?.querySelector("h2");
+      const copy = connectedOffer?.querySelector(".connected-copy");
+      if (kicker) kicker.textContent = "SEU ACESSO ESTÁ PRONTO";
+      if (heading) heading.textContent = "Antes de navegar, conheça a i9.";
+      if (copy) copy.textContent = "Internet fibra para sua casa a partir de R$ 79,90.";
+      return;
+    }
+
     submit.disabled = true;
     submit.classList.add("loading");
     setMessage("Conectando você ao Wi-Fi...");
@@ -140,6 +158,15 @@
       submit.disabled = false;
       submit.classList.remove("loading");
       setMessage("Não foi possível iniciar a autenticação. Reconecte ao Wi-Fi e tente novamente.", true);
+    }
+  });
+
+  androidConnect?.addEventListener("click", () => {
+    androidConnect.disabled = true;
+    androidConnect.textContent = "Liberando acesso...";
+    if (!submitHotspotLogin()) {
+      androidConnect.disabled = false;
+      androidConnect.textContent = "Liberar meu acesso →";
     }
   });
 
