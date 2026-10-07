@@ -77,11 +77,31 @@
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
   }
 
-  function buildTrialUrl() {
-    if (!hotspot.linkLogin || !hotspot.mac) return null;
-    const sep = hotspot.linkLogin.includes("?") ? "&" : "?";
-    const dst = hotspot.linkOrig || "https://www.google.com/";
-    return `${hotspot.linkLogin}${sep}dst=${encodeURIComponent(dst)}&username=${encodeURIComponent("T-" + hotspot.mac)}`;
+  function submitHotspotLogin() {
+    if (!hotspot.linkLogin) return false;
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = hotspot.linkLogin;
+    form.style.display = "none";
+
+    const fields = {
+      username: "bilisco-portal",
+      password: "BILISCO2026",
+      dst: hotspot.linkOrig || "http://neverssl.com/"
+    };
+
+    Object.entries(fields).forEach(([name, value]) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    return true;
   }
 
   [firstName, lastName].forEach(input => {
@@ -170,14 +190,16 @@
       }
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      const trialUrl = buildTrialUrl();
-      if (!trialUrl) {
-        setMessage("Cadastro concluído. Falta a RB enviar os parâmetros de autenticação.", true);
+      if (!hotspot.linkLogin) {
+        setMessage("Cadastro concluído, mas o ponto de acesso não enviou o endereço de autenticação.", true);
         return;
       }
 
-      setMessage("Cadastro concluído. Conectando...");
-      window.location.assign(trialUrl);
+      setMessage("Cadastro concluído. Liberando a internet...");
+      const submitted = submitHotspotLogin();
+      if (!submitted) {
+        setMessage("Não foi possível concluir a autenticação no Wi-Fi. Reconecte e tente novamente.", true);
+      }
     } catch (error) {
       console.error(error);
       setMessage("Não foi possível liberar o acesso agora. Tente novamente.", true);
