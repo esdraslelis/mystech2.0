@@ -442,3 +442,32 @@ dialog::backdrop{background:rgba(20,20,22,.48);backdrop-filter:blur(4px)}
 @media(max-width:560px){
   .android-connect{height:40px;font-size:11px}
 }
+
+.android-connect{
+  display:none;
+  width:100%;
+  height:44px;
+  margin-top:12px;
+  border:0;
+  border-radius:12px;
+  background:linear-gradient(100deg,var(--i9-red),var(--i9-orange));
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  cursor:pointer;
+  box-shadow:0 10px 22px rgba(239,21,40,.16);
+}
+.access-card.android-preauth .offer-cta,
+.access-card.android-preauth .continue-browsing{display:none}
+.access-card.android-preauth .android-connect{display:flex}
+.access-card.android-preauth .connected-check{
+  background:#fff4ec;
+  color:#e25a18;
+}
+.access-card.android-preauth .connected-kicker{color:#d95c18}
+@media(max-width:560px){
+  .android-connect{height:40px;font-size:11px}
+}
