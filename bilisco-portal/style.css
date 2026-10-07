@@ -182,11 +182,20 @@ footer{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
   color:#9a9390;
   font-size:8.5px;
 }
-footer strong{color:#272427;font-size:9.5px}
+.developer-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  color:inherit;
+  text-decoration:none;
+  transition:opacity .18s ease;
+}
+.developer-link:hover{opacity:.72}
+.developer-link strong{color:#272427;font-size:9.5px}
 .mystech-logo{width:16px;height:16px;background-image:var(--mystech-logo);background-size:contain;background-position:center;background-repeat:no-repeat;filter:brightness(0)}
 .success-toast{
   position:fixed;left:50%;top:50%;
