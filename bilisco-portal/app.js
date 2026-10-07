@@ -8,6 +8,7 @@
   const modal = document.getElementById("legal-modal");
   const modalTitle = document.getElementById("modal-title");
   const modalContent = document.getElementById("modal-content");
+  const successToast = document.getElementById("success-toast");
 
   const SUPABASE_URL = "https://ilccoqqhgrsqgbglyiha.supabase.co";
   const REGISTER_ENDPOINT = `${SUPABASE_URL}/functions/v1/register-lead`;
@@ -43,6 +44,12 @@
   function setMessage(text, isError = false) {
     message.textContent = text;
     message.classList.toggle("error", isError);
+  }
+
+  function showSuccessToast() {
+    if (!successToast) return;
+    successToast.setAttribute("aria-hidden", "false");
+    successToast.classList.add("show");
   }
 
   function normalizeName(value) {
@@ -195,9 +202,13 @@
         return;
       }
 
-      setMessage("Cadastro concluído. Liberando a internet...");
+      setMessage("Cadastro concluído. Preparando sua conexão...");
+      showSuccessToast();
+      await new Promise(resolve => setTimeout(resolve, 900));
+
       const submitted = submitHotspotLogin();
       if (!submitted) {
+        successToast?.classList.remove("show");
         setMessage("Não foi possível concluir a autenticação no Wi-Fi. Reconecte e tente novamente.", true);
       }
     } catch (error) {
