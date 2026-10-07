@@ -1,4 +1,8 @@
 (() => {
+  if (window.location.hostname === "bilisco.pages.dev") {
+    window.location.replace("https://bilisco.mystech.com.br" + window.location.pathname + window.location.search + window.location.hash);
+    return;
+  }
   const form = document.getElementById("access-form");
   const firstName = document.getElementById("firstName");
   const lastName = document.getElementById("lastName");
