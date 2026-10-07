@@ -8,7 +8,7 @@
   <meta name="description" content="Acesse o Wi-Fi do Bilisco." />
   <link rel="stylesheet" href="./assets.css" />
   <link rel="stylesheet" href="./mystech.css" />
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./style.css?v=20261007-2" />
 </head>
 <body>
   <main class="page">
@@ -18,6 +18,12 @@
         <span class="eyebrow">WI‑FI GRÁTIS</span>
         <h1 id="title">Conecte-se ao Wi‑Fi do Bilisco</h1>
         <p class="intro">Preencha seus dados rapidinho para liberar o acesso à internet.</p>
+        <div class="partner-strip" aria-label="Conexão oferecida em parceria com a Conexão i9">
+          <span>Conexão oferecida em parceria por</span>
+          <strong>Bilisco</strong>
+          <span class="partner-plus">+</span>
+          <img src="./i9-logo.webp?v=20261007-2" alt="Conexão i9 Telecomunicações" />
+        </div>
       </div>
 
       <div class="steps" aria-label="Etapas do acesso">
@@ -69,6 +75,13 @@
         </a>
       </footer>
     </section>
+      <div id="success-toast" class="success-toast" role="status" aria-live="polite" aria-hidden="true">
+      <span class="success-icon">✓</span>
+      <div>
+        <strong>Tudo certo!</strong>
+        <small>Cadastro concluído. Estamos conectando você ao Wi‑Fi.</small>
+      </div>
+    </div>
   </main>
 
   <dialog id="legal-modal">
@@ -79,6 +92,6 @@
     <div id="modal-content" class="modal-content"></div>
   </dialog>
 
-  <script src="./app.js"></script>
+  <script src="./app.js?v=20261007-2"></script>
 </body>
 </html>
