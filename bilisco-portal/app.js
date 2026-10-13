@@ -1,8 +1,5 @@
 (() => {
-  if (window.location.hostname === "bilisco.pages.dev") {
-    window.location.replace("https://bilisco.mystech.com.br" + window.location.pathname + window.location.search + window.location.hash);
-    return;
-  }
+
   const form = document.getElementById("access-form");
   const firstName = document.getElementById("firstName");
   const lastName = document.getElementById("lastName");
@@ -19,8 +16,8 @@
   const androidConnect = document.getElementById("android-connect");
   const isAndroid = /Android/i.test(navigator.userAgent);
 
-  const REGISTER_ENDPOINT = "https://ilccoqqhgrsqgbglyiha.supabase.co/functions/v1/register-lead";
-  const PENDING_KEY = "bilisco-pending-lead";
+  const REGISTER_ENDPOINT = ""; // Aguardar API exclusiva do evento
+  const PENDING_KEY = "evento-pending-lead";
   const VALID_DDDS = new Set(["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"]);
 
   const params = new URLSearchParams(window.location.search);
@@ -32,8 +29,8 @@
   };
 
   const legal = {
-    terms: { title: "Termos de Uso", html: "<p>O acesso ao Wi-Fi do Bilisco é destinado aos clientes e visitantes do estabelecimento. O usuário se compromete a utilizar a conexão de forma lícita, responsável e sem prejudicar a rede ou terceiros.</p><p>O acesso poderá ser limitado ou interrompido para manutenção, segurança, uso abusivo ou necessidade operacional.</p>" },
-    privacy: { title: "Política de Privacidade", html: "<p>Ao solicitar o acesso, você informa nome, sobrenome e celular. Esses dados podem ser utilizados para controle de acesso, segurança da rede e relacionamento do Bilisco com seus clientes, conforme a legislação aplicável.</p><p>Os dados não devem ser expostos publicamente e devem ser protegidos pelos sistemas responsáveis pelo armazenamento.</p>" }
+    terms: { title: "Termos de Uso", html: "<p>O acesso ao Wi-Fi do evento é destinado aos clientes e visitantes do estabelecimento. O usuário se compromete a utilizar a conexão de forma lícita, responsável e sem prejudicar a rede ou terceiros.</p><p>O acesso poderá ser limitado ou interrompido para manutenção, segurança, uso abusivo ou necessidade operacional.</p>" },
+    privacy: { title: "Política de Privacidade", html: "<p>Ao solicitar o acesso, você informa nome, sobrenome e celular. Esses dados podem ser utilizados para controle de acesso, segurança da rede e relacionamento do evento com seus clientes, conforme a legislação aplicável.</p><p>Os dados não devem ser expostos publicamente e devem ser protegidos pelos sistemas responsáveis pelo armazenamento.</p>" }
   };
 
   function setMessage(text, isError = false) {
@@ -69,6 +66,7 @@
     const raw = localStorage.getItem(PENDING_KEY);
     if (!raw) return;
     try {
+      if (!REGISTER_ENDPOINT) throw new Error("Cadastro do evento ainda não habilitado.");
       const response = await fetch(REGISTER_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -89,8 +87,8 @@
     loginForm.style.display = "none";
 
     const fields = {
-      username: "bilisco-portal",
-      password: "BILISCO2026",
+      username: "evento-portal",
+      password: "",
       dst: `${window.location.origin}${window.location.pathname}?connected=1`
     };
 
