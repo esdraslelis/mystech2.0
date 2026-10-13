@@ -480,3 +480,6 @@ dialog::backdrop{background:rgba(20,20,22,.48);backdrop-filter:blur(4px)}
 @media(max-width:560px){
   .android-connect{height:40px;font-size:11px}
 }
+
+/* Evento: reservar espaço sem exibir a logo antiga do Bilisco */
+.event-logo-placeholder { background-image: none !important; background: transparent !important; }
