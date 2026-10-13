@@ -47,3 +47,11 @@ button{cursor:pointer}.ghost{height:42px;background:#fff;color:#30343a;border:1p
  .login-wrap{min-height:calc(100dvh - 36px);margin:0}.login-card{padding:20px 18px}.login-logo{height:70px}.login-card form{margin-top:16px;gap:10px}
 }
 @media(max-width:380px){.admin-logo{width:65px;min-width:65px;height:48px}.leads-panel td:before{flex-basis:72px}}
+
+/* Identidade fixa Conexão i9 — sem seletor ou preferência local. */
+:root{--blue:#154f9d;--red:#f3b522;--yellow:#f3b522;--soft:#edf4ff}
+body{background:linear-gradient(145deg,#edf4ff,#fff)}
+.i9-admin-logo{background-image:url("../i9-logo-oficial.png");background-position:center;background-repeat:no-repeat;background-size:contain}
+.eyebrow{background:#edf4ff;color:#154f9d}
+.primary{background:linear-gradient(135deg,#154f9d,#2370c1);box-shadow:0 11px 24px rgba(21,79,157,.18)}
+.bar-chart.monthly .bar-fill{background:#f3b522}
