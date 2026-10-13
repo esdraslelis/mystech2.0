@@ -5,19 +5,7 @@
   const loginView=$("login-view"), dashboardView=$("dashboard-view"), loginForm=$("login-form"), loginMessage=$("login-message");
   const tbody=$("leads-body"), empty=$("empty"), statusText=$("status-text"), search=$("search"), periodFilter=$("period-filter"), contactFilter=$("contact-filter"), startDate=$("start-date"), endDate=$("end-date");
   let leads=[];
-  const BRAND_KEY="bilisco_admin_brand";
-  function setBrand(value){
-    const brand=value==="i9"?"i9":"bilisco";
-    document.documentElement.dataset.brand=brand;
-    $("brand-select").value=brand;
-    document.title=(brand==="i9"?"Conexão i9":"Bilisco")+" | Painel de Leads";
-    document.querySelectorAll(".theme-logo").forEach(el=>el.setAttribute("aria-label",brand==="i9"?"Conexão i9":"Bilisco"));
-    try{localStorage.setItem(BRAND_KEY,brand)}catch(_){}
-  }
-  let savedBrand="bilisco";
-  try{savedBrand=localStorage.getItem(BRAND_KEY)||"bilisco"}catch(_){}
-  setBrand(savedBrand);
-  $("brand-select").addEventListener("change",e=>setBrand(e.target.value));
+  document.title="Conexão i9 | Painel de Leads";
 
   const token=()=>sessionStorage.getItem(TOKEN_KEY)||"";
   const authHeaders=()=>token()?{"Authorization":"Bearer "+token()}:{};
