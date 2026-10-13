@@ -1,11 +1,11 @@
 (() => {
-  const API_BASE="https://ilccoqqhgrsqgbglyiha.supabase.co/functions/v1/bilisco-admin";
-  const TOKEN_KEY="bilisco_admin_token";
+  const API_BASE=""; // Configurar backend exclusivo do evento antes de habilitar autenticação
+  const TOKEN_KEY="evento_admin_token";
   const $=id=>document.getElementById(id);
   const loginView=$("login-view"), dashboardView=$("dashboard-view"), loginForm=$("login-form"), loginMessage=$("login-message");
   const tbody=$("leads-body"), empty=$("empty"), statusText=$("status-text"), search=$("search"), periodFilter=$("period-filter"), contactFilter=$("contact-filter"), startDate=$("start-date"), endDate=$("end-date");
   let leads=[];
-  document.title="Conexão i9 | Painel de Leads";
+  document.title="Evento | Painel de Leads";
 
   const token=()=>sessionStorage.getItem(TOKEN_KEY)||"";
   const authHeaders=()=>token()?{"Authorization":"Bearer "+token()}:{};
@@ -105,7 +105,7 @@
       const full=[item.firstName,item.lastName].filter(Boolean).join(" ")||"—";
       tr.innerHTML='<td><span class="name"></span><span class="sub"></span></td><td></td><td></td><td></td><td></td><td class="contact-cell"></td>';
       tr.children[0].querySelector(".name").textContent=full;
-      tr.children[0].querySelector(".sub").textContent=item.source||"Bilisco Wi-Fi";
+      tr.children[0].querySelector(".sub").textContent=item.source||"Wi-Fi do Evento";
       tr.children[1].textContent=item.phone||"—";
       tr.children[2].textContent=fmtDate(item.createdAt);
       tr.children[3].textContent=item.ip||"—";
@@ -175,7 +175,7 @@
   function showLogin(){sessionStorage.removeItem(TOKEN_KEY);dashboardView.hidden=true;loginView.hidden=false}
 
   loginForm.addEventListener("submit",async e=>{
-    e.preventDefault();loginMessage.textContent="";const btn=loginForm.querySelector("button");btn.disabled=true;
+    e.preventDefault();loginMessage.textContent="";if(!API_BASE){loginMessage.textContent="Painel preparado. Falta configurar o backend exclusivo do evento.";return;}const btn=loginForm.querySelector("button");btn.disabled=true;
     try{const r=await fetch(API_BASE+"/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("username").value.trim(),password:$("password").value})});const data=await r.json().catch(()=>({}));if(!r.ok||!data.token)throw new Error("Usuário ou senha inválidos.");sessionStorage.setItem(TOKEN_KEY,data.token);showDashboard()}catch(err){loginMessage.textContent=err.message||"Não foi possível entrar."}finally{btn.disabled=false}
   });
 
