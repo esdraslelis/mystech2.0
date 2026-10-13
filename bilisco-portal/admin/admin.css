@@ -87,3 +87,10 @@ input:focus,select:focus{border-color:rgba(229,16,34,.5);box-shadow:0 0 0 4px rg
 .login-logo{width:min(100%,260px);height:110px}
 @media(max-width:700px){.admin-logo{width:105px;height:58px}.login-logo{height:90px}}
 @media(max-width:380px){.admin-logo{width:82px;height:50px}}
+
+/* Logo institucional como imagem real, não background CSS. */
+img.i9-admin-logo{display:block;object-fit:contain;object-position:center;background:none!important;max-width:100%;font-size:0}
+img.login-logo{width:min(100%,260px);height:110px;margin:0 auto 10px}
+img.admin-logo{width:160px;height:76px;flex:0 0 auto}
+@media(max-width:700px){img.admin-logo{width:105px;height:58px}img.login-logo{height:90px}}
+@media(max-width:380px){img.admin-logo{width:82px;height:50px}}
