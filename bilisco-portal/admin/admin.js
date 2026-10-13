@@ -1,5 +1,5 @@
 (() => {
-  const API_BASE=""; // Configurar backend exclusivo do evento antes de habilitar autenticação
+  const API_BASE="https://ilccoqqhgrsqgbglyiha.supabase.co/functions/v1/buteco360-admin";
   const TOKEN_KEY="evento_admin_token";
   const $=id=>document.getElementById(id);
   const loginView=$("login-view"), dashboardView=$("dashboard-view"), loginForm=$("login-form"), loginMessage=$("login-message");
@@ -175,7 +175,7 @@
   function showLogin(){sessionStorage.removeItem(TOKEN_KEY);dashboardView.hidden=true;loginView.hidden=false}
 
   loginForm.addEventListener("submit",async e=>{
-    e.preventDefault();loginMessage.textContent="";if(!API_BASE){loginMessage.textContent="Painel preparado. Falta configurar o backend exclusivo do evento.";return;}const btn=loginForm.querySelector("button");btn.disabled=true;
+    e.preventDefault();loginMessage.textContent="";const btn=loginForm.querySelector("button");btn.disabled=true;
     try{const r=await fetch(API_BASE+"/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("username").value.trim(),password:$("password").value})});const data=await r.json().catch(()=>({}));if(!r.ok||!data.token)throw new Error("Usuário ou senha inválidos.");sessionStorage.setItem(TOKEN_KEY,data.token);showDashboard()}catch(err){loginMessage.textContent=err.message||"Não foi possível entrar."}finally{btn.disabled=false}
   });
 
