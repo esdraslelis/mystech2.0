@@ -94,3 +94,9 @@ img.login-logo{width:min(100%,260px);height:110px;margin:0 auto 10px}
 img.admin-logo{width:160px;height:76px;flex:0 0 auto}
 @media(max-width:700px){img.admin-logo{width:105px;height:58px}img.login-logo{height:90px}}
 @media(max-width:380px){img.admin-logo{width:82px;height:50px}}
+
+/* Logo embutida no i9.css carregado antes deste arquivo: sem dependência do PNG separado. */
+.i9-admin-logo{display:block!important;background-image:var(--i9-logo)!important;background-position:center!important;background-repeat:no-repeat!important;background-size:contain!important;min-height:50px;opacity:1!important;visibility:visible!important}
+.login-logo{width:min(100%,260px);height:110px;margin:0 auto 12px}
+.admin-logo{width:160px;height:76px;flex-shrink:0}
+@media(max-width:700px){.admin-logo{width:105px;height:58px}.login-logo{height:90px}}
