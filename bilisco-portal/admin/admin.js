@@ -5,6 +5,19 @@
   const loginView=$("login-view"), dashboardView=$("dashboard-view"), loginForm=$("login-form"), loginMessage=$("login-message");
   const tbody=$("leads-body"), empty=$("empty"), statusText=$("status-text"), search=$("search"), periodFilter=$("period-filter"), contactFilter=$("contact-filter"), startDate=$("start-date"), endDate=$("end-date");
   let leads=[];
+  const BRAND_KEY="bilisco_admin_brand";
+  function setBrand(value){
+    const brand=value==="i9"?"i9":"bilisco";
+    document.documentElement.dataset.brand=brand;
+    $("brand-select").value=brand;
+    document.title=(brand==="i9"?"Conexão i9":"Bilisco")+" | Painel de Leads";
+    document.querySelectorAll(".theme-logo").forEach(el=>el.setAttribute("aria-label",brand==="i9"?"Conexão i9":"Bilisco"));
+    try{localStorage.setItem(BRAND_KEY,brand)}catch(_){}
+  }
+  let savedBrand="bilisco";
+  try{savedBrand=localStorage.getItem(BRAND_KEY)||"bilisco"}catch(_){}
+  setBrand(savedBrand);
+  $("brand-select").addEventListener("change",e=>setBrand(e.target.value));
 
   const token=()=>sessionStorage.getItem(TOKEN_KEY)||"";
   const authHeaders=()=>token()?{"Authorization":"Bearer "+token()}:{};
@@ -110,6 +123,7 @@
       tr.children[3].textContent=item.ip||"—";
       tr.children[4].textContent=item.mac||"—";
       tr.children[5].innerHTML=contactCheckbox(item.phone||"",item.mac||"",!!item.conexaoI9Contacted);
+      ["Cliente","Celular","Data / hora","IP","MAC","Conexão i9"].forEach((label,i)=>tr.children[i].setAttribute("data-label",label));
       tbody.appendChild(tr);
     });
     empty.hidden=filtered.length!==0;
@@ -154,62 +168,9 @@
     $("monthly-summary").textContent=best?("pico: "+monthLabels[idx]+" · "+best):"sem dados";
   }
 
-  function renderRecurring(filtered){
-    const target=$("recurring-body"), emptyRecurring=$("recurring-empty");
-    const grouped=new Map();
-    filtered.forEach(item=>{
-      const key=(item.phone||item.mac||item.id||"").trim();
-      if(!key)return;
-      if(!grouped.has(key)){
-        grouped.set(key,{
-          firstName:item.firstName,
-          lastName:item.lastName,
-          phone:item.phone||"—",
-          days:new Set(),
-          total:0,
-          last:null
-        });
-      }
-      const g=grouped.get(key);
-      const d=new Date(item.createdAt);
-      if(!Number.isNaN(d.getTime())){
-        g.days.add(localKey(d));
-        if(!g.last||d>g.last)g.last=d;
-      }
-      g.total++;
-      if(item.firstName)g.firstName=item.firstName;
-      if(item.lastName)g.lastName=item.lastName;
-    });
-
-    const rows=[...grouped.values()]
-      .map(g=>({...g,distinctDays:g.days.size}))
-      .sort((a,b)=>b.distinctDays-a.distinctDays||b.total-a.total||(b.last?.getTime()||0)-(a.last?.getTime()||0));
-
-    target.innerHTML="";
-    const maxDays=Math.max(...rows.map(r=>r.distinctDays),1);
-    rows.slice(0,20).forEach((r,index)=>{
-      const tr=document.createElement("tr");
-      const full=[r.firstName,r.lastName].filter(Boolean).join(" ")||"—";
-      const pct=Math.round((r.distinctDays/maxDays)*100);
-      tr.innerHTML='<td><span class="rank-badge '+(index<3?'top':'')+'">'+(index+1)+'</span></td>'+
-        '<td><span class="name"></span><span class="sub">Cliente recorrente</span></td>'+
-        '<td></td><td class="days-count"></td><td></td><td></td>'+
-        '<td><div class="repeat-wrap"><div class="repeat-track"><div class="repeat-fill" style="width:'+pct+'%"></div></div><span class="repeat-pct">'+pct+'%</span></div></td>';
-      tr.children[1].querySelector(".name").textContent=full;
-      tr.children[2].textContent=r.phone;
-      tr.children[3].textContent=r.distinctDays;
-      tr.children[4].textContent=r.total;
-      tr.children[5].textContent=r.last?fmtDate(r.last):"—";
-      target.appendChild(tr);
-    });
-    emptyRecurring.hidden=rows.length!==0;
-    const returning=rows.filter(r=>r.distinctDays>1).length;
-    $("recurring-summary").textContent=returning+" recorrente"+(returning===1?"":"s");
-  }
-
   function render(){
     const filtered=filteredLeads();
-    renderMetrics(filtered);renderRecurring(filtered);renderCharts(filtered);renderTable(filtered);bindContactToggles();
+    renderMetrics(filtered);renderCharts(filtered);renderTable(filtered);bindContactToggles();
   }
 
   async function loadLeads(){
@@ -219,7 +180,7 @@
       if(r.status===401){showLogin();return}
       if(!r.ok)throw new Error("Falha ao carregar leads");
       const data=await r.json();leads=Array.isArray(data.leads)?data.leads:[];render();
-    }catch(e){statusText.textContent="Não foi possível carregar os leads.";leads=[];render()}
+    }catch(e){statusText.textContent="Não foi possível carregar os leads.";render();statusText.textContent="Falha ao atualizar; exibindo dados da sessão."}
   }
 
   function showDashboard(){loginView.hidden=true;dashboardView.hidden=false;loadLeads()}
