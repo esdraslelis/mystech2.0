@@ -100,3 +100,17 @@ img.admin-logo{width:160px;height:76px;flex:0 0 auto}
 .login-logo{width:min(100%,260px);height:110px;margin:0 auto 12px}
 .admin-logo{width:160px;height:76px;flex-shrink:0}
 @media(max-width:700px){.admin-logo{width:105px;height:58px}.login-logo{height:90px}}
+
+
+/* Gráficos: remover fileira de números sobreposta e manter tooltip dentro do plot. */
+.bar-chart{padding-top:12px}
+.bar-col{grid-template-rows:minmax(0,1fr) 20px}
+.bar-value{display:none}
+.bar-track{min-height:0}
+.bar-tooltip{top:12px;bottom:auto;left:50%;right:auto;transform:translate(-50%,6px);min-width:104px}
+.bar-col:hover .bar-tooltip{transform:translate(-50%,0)}
+.bar-col:first-child .bar-tooltip,.bar-col:nth-child(2) .bar-tooltip{left:0;transform:translate(0,6px)}
+.bar-col:first-child:hover .bar-tooltip,.bar-col:nth-child(2):hover .bar-tooltip{transform:translate(0,0)}
+.bar-col:nth-last-child(1) .bar-tooltip,.bar-col:nth-last-child(2) .bar-tooltip{left:auto;right:0;transform:translate(0,6px)}
+.bar-col:nth-last-child(1):hover .bar-tooltip,.bar-col:nth-last-child(2):hover .bar-tooltip{transform:translate(0,0)}
+@media(max-width:700px){.bar-chart{padding-top:12px}}
