@@ -16,7 +16,7 @@
   const androidConnect = document.getElementById("android-connect");
   const isAndroid = /Android/i.test(navigator.userAgent);
 
-  const REGISTER_ENDPOINT = ""; // Ativar quando a autenticacao do hotspot Buteco 360 estiver configurada
+  const REGISTER_ENDPOINT = "https://ilccoqqhgrsqgbglyiha.supabase.co/functions/v1/buteco360-register";
   const PENDING_KEY = "evento-pending-lead";
   const VALID_DDDS = new Set(["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"]);
 
@@ -118,7 +118,7 @@
   }));
   document.getElementById("close-modal").addEventListener("click", () => modal.close());
 
-  form.addEventListener("submit", event => {
+  form.addEventListener("submit", async event => {
     event.preventDefault();
     setMessage("");
     const cleanFirst = normalizeName(firstName.value);
@@ -129,7 +129,24 @@
     if (!validName(cleanLast)) { lastName.setCustomValidity("Informe um sobrenome válido, usando apenas letras."); lastName.reportValidity(); lastName.setCustomValidity(""); lastName.focus(); return; }
     if (!validPhone(digits)) { phone.setCustomValidity("Informe um celular brasileiro válido com DDD e 9 dígitos."); phone.reportValidity(); phone.setCustomValidity(""); phone.focus(); return; }
     if (!document.getElementById("terms").checked) { setMessage("Aceite os Termos de Uso e a Política de Privacidade para continuar.", true); return; }
-    if (!hotspot.linkLogin) { setMessage("Reconecte ao Wi-Fi para iniciar uma nova sessão.", true); return; }
+    submit.disabled = true;
+    submit.classList.add("loading");
+    setMessage("Registrando seu cadastro...");
+    try {
+      const response = await fetch(REGISTER_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName: cleanFirst, lastName: cleanLast, phone: digits, acceptedTerms: true, hotspot })
+      });
+      if (!response.ok) throw new Error("Falha ao registrar");
+      setMessage("Cadastro registrado! A liberação automática do Wi-Fi ainda está em configuração. Solicite ajuda à equipe do evento.");
+    } catch (error) {
+      setMessage("Não conseguimos registrar seu cadastro. Tente novamente.", true);
+    } finally {
+      submit.disabled = false;
+      submit.classList.remove("loading");
+    }
+    return;
 
     localStorage.setItem(PENDING_KEY, JSON.stringify({ firstName: cleanFirst, lastName: cleanLast, phone: digits, acceptedTerms: true, hotspot }));
 
@@ -170,6 +187,8 @@
 
   async function handleConnectedReturn() {
     if (params.get("connected") !== "1") return;
+    // O parâmetro da URL não comprova autenticação do Hotspot.
+    return;
 
     let originalDestination = "";
     try {
