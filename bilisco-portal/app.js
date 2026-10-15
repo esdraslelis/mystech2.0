@@ -79,19 +79,25 @@
     }
   }
 
-  function submitHotspotLogin() {
-    if (!hotspot.linkLogin) return false;
+  function submitHotspotLogin(credentials) {
+    if (!hotspot.linkLogin || !credentials?.username || !credentials?.password) return false;
+    let loginUrl;
+    try {
+      loginUrl = new URL(hotspot.linkLogin);
+      if (!["http:", "https:"].includes(loginUrl.protocol) ||
+          !["login.buteco360.local", "10.77.0.1"].includes(loginUrl.hostname) ||
+          !loginUrl.pathname.endsWith("/login")) return false;
+    } catch { return false; }
+
     const loginForm = document.createElement("form");
     loginForm.method = "POST";
-    loginForm.action = hotspot.linkLogin;
+    loginForm.action = loginUrl.href;
     loginForm.style.display = "none";
-
     const fields = {
-      username: "evento-portal",
-      password: "",
-      dst: `${window.location.origin}${window.location.pathname}?connected=1`
+      username: credentials.username,
+      password: credentials.password,
+      dst: window.location.origin + window.location.pathname + "?connected=1"
     };
-
     Object.entries(fields).forEach(([name, value]) => {
       const input = document.createElement("input");
       input.type = "hidden";
@@ -99,6 +105,7 @@
       input.value = value;
       loginForm.appendChild(input);
     });
+    localStorage.setItem("b360-auth-started", String(Date.now()));
     document.body.appendChild(loginForm);
     loginForm.submit();
     return true;
@@ -129,6 +136,7 @@
     if (!validName(cleanLast)) { lastName.setCustomValidity("Informe um sobrenome válido, usando apenas letras."); lastName.reportValidity(); lastName.setCustomValidity(""); lastName.focus(); return; }
     if (!validPhone(digits)) { phone.setCustomValidity("Informe um celular brasileiro válido com DDD e 9 dígitos."); phone.reportValidity(); phone.setCustomValidity(""); phone.focus(); return; }
     if (!document.getElementById("terms").checked) { setMessage("Aceite os Termos de Uso e a Política de Privacidade para continuar.", true); return; }
+
     submit.disabled = true;
     submit.classList.add("loading");
     setMessage("Registrando seu cadastro...");
@@ -136,57 +144,38 @@
       const response = await fetch(REGISTER_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName: cleanFirst, lastName: cleanLast, phone: digits, acceptedTerms: true, hotspot })
+        body: JSON.stringify({firstName: cleanFirst, lastName: cleanLast, phone: digits, acceptedTerms: true, hotspot})
       });
-      if (!response.ok) throw new Error("Falha ao registrar");
-      setMessage("Cadastro registrado! A liberação automática do Wi-Fi ainda está em configuração. Solicite ajuda à equipe do evento.");
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) throw new Error("register_failed");
+
+      if (data.awaiting_activation || !data.hotspot_login) {
+        setMessage("Cadastro registrado! Estamos preparando a liberação automática do Wi-Fi.");
+        return;
+      }
+      if (!hotspot.linkLogin) {
+        setMessage("Cadastro registrado! Conecte-se ao Wi-Fi Buteco 360 Clientes para concluir o acesso.");
+        return;
+      }
+      setMessage("Cadastro confirmado. Liberando internet...");
+      if (!submitHotspotLogin(data.hotspot_login)) {
+        setMessage("Cadastro realizado, mas o endereço de autenticação do Wi-Fi está inválido. Procure a equipe do evento.", true);
+      }
     } catch (error) {
-      setMessage("Não conseguimos registrar seu cadastro. Tente novamente.", true);
+      console.error("Cadastro Buteco 360", error);
+      setMessage("Não foi possível concluir o cadastro. Tente novamente.", true);
     } finally {
       submit.disabled = false;
       submit.classList.remove("loading");
-    }
-    return;
-
-    localStorage.setItem(PENDING_KEY, JSON.stringify({ firstName: cleanFirst, lastName: cleanLast, phone: digits, acceptedTerms: true, hotspot }));
-
-    if (isAndroid) {
-      form.style.display = "none";
-      setMessage("");
-      accessCard?.classList.add("is-connected", "android-preauth");
-      connectedOffer?.setAttribute("aria-hidden", "false");
-
-      const kicker = connectedOffer?.querySelector(".connected-kicker");
-      const heading = connectedOffer?.querySelector("h2");
-      const copy = connectedOffer?.querySelector(".connected-copy");
-      if (kicker) kicker.textContent = "SEU ACESSO ESTÁ PRONTO";
-      if (heading) heading.textContent = "Antes de navegar, conheça a i9.";
-      if (copy) copy.textContent = "Internet fibra para sua casa a partir de R$ 79,90.";
-      return;
-    }
-
-    submit.disabled = true;
-    submit.classList.add("loading");
-    setMessage("Conectando você ao Wi-Fi...");
-
-    if (!submitHotspotLogin()) {
-      submit.disabled = false;
-      submit.classList.remove("loading");
-      setMessage("Não foi possível iniciar a autenticação. Reconecte ao Wi-Fi e tente novamente.", true);
-    }
-  });
-
-  androidConnect?.addEventListener("click", () => {
-    androidConnect.disabled = true;
-    androidConnect.textContent = "Liberando acesso...";
-    if (!submitHotspotLogin()) {
-      androidConnect.disabled = false;
-      androidConnect.textContent = "Liberar meu acesso →";
     }
   });
 
   async function handleConnectedReturn() {
     if (params.get("connected") !== "1") return;
+    const started=Number(localStorage.getItem("b360-auth-started") || "0");
+    if (!started || Date.now()-started > 600000) return;
+    localStorage.removeItem("b360-auth-started");
+    if (androidConnect) androidConnect.style.display="none";
     // O parâmetro da URL não comprova autenticação do Hotspot.
     return;
 
@@ -208,9 +197,9 @@
     successToast?.setAttribute("aria-hidden", "true");
     accessCard?.classList.add("is-connected");
     connectedOffer?.setAttribute("aria-hidden", "false");
-    await savePendingLead();
+    showSuccess();
   }
 
-  window.addEventListener("online", savePendingLead);
+
   handleConnectedReturn();
 })();
