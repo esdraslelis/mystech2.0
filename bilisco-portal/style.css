@@ -485,5 +485,5 @@ dialog::backdrop{background:rgba(20,20,22,.48);backdrop-filter:blur(4px)}
 .event-logo-placeholder { background-image: none !important; background: transparent !important; }
 
 /* Identidade oficial do parceiro Buteco 360° */
-.partner-logo.buteco360-logo{display:block;width:86px;height:86px;max-width:100%;object-fit:contain;opacity:1;background:none}
-@media(max-width:700px){.partner-logo.buteco360-logo{width:64px;height:64px}}
+.partner-logo.buteco360-logo{display:block;width:110px!important;height:auto!important;aspect-ratio:1/1;max-width:100%;object-fit:contain;object-position:center;opacity:1;background:none;flex-shrink:0;margin:2px auto 0}
+@media(max-width:700px){.partner-logo.buteco360-logo{width:110px!important;height:auto!important}}
