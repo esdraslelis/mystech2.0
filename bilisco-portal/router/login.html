@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wi-Fi Buteco 360</title></head>
+<body>
+<p>Abrindo o cadastro do Wi-Fi Buteco 360...</p>
+<a id="open" href="https://buteco360.mystech.com.br/">Abrir cadastro</a>
+<script>
+(function () {
+  var url = new URL("https://buteco360.mystech.com.br/");
+  var params = {
+    "mac": "$(mac)",
+    "ip": "$(ip)",
+    "link-login-only": "$(link-login-only)"
+  };
+  Object.keys(params).forEach(function(key) {
+    var value = params[key];
+    if (value && value.indexOf("$(") !== 0) url.searchParams.set(key, value);
+  });
+  document.getElementById("open").href = url.href;
+  window.location.replace(url.href);
+})();
+</script>
+</body>
+</html>
