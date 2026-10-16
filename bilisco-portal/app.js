@@ -67,7 +67,7 @@
     try {
       loginUrl = new URL(hotspot.linkLogin);
       if (!["http:", "https:"].includes(loginUrl.protocol) ||
-          !["login.buteco360.local", "10.77.0.1"].includes(loginUrl.hostname) ||
+          !["login.buteco360.mystech.com.br", "login.buteco360.local", "10.77.0.1"].includes(loginUrl.hostname) ||
           !loginUrl.pathname.endsWith("/login")) return false;
     } catch { return false; }
 
