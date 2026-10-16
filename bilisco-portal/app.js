@@ -140,6 +140,7 @@
         return;
       }
       pendingCredentials = data.hotspot_login;
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
       accessCard?.classList.add("is-connected", "android-preauth");
       connectedOffer?.setAttribute("aria-hidden", "false");
       const kicker = connectedOffer?.querySelector(".connected-kicker");
