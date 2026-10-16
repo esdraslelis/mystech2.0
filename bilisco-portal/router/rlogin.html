@@ -1,0 +1,3 @@
+$(if http-status == 302)Found$(endif)
+$(if http-header == "Location")https://buteco360.mystech.com.br/?mac=$(mac-esc)&ip=$(ip-esc)&link-login-only=$(link-login-only-esc)$(endif)
+$(if http-header == "Cache-Control")no-store, no-cache, must-revalidate$(endif)
