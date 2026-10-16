@@ -14,10 +14,9 @@
   const connectedOffer = document.getElementById("connected-offer");
   const continueBrowsing = document.getElementById("continue-browsing");
   const androidConnect = document.getElementById("android-connect");
-  const isAndroid = /Android/i.test(navigator.userAgent);
+  let pendingCredentials = null;
 
   const REGISTER_ENDPOINT = "https://ilccoqqhgrsqgbglyiha.supabase.co/functions/v1/buteco360-register";
-  const PENDING_KEY = "evento-pending-lead";
   const VALID_DDDS = new Set(["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"]);
 
   const params = new URLSearchParams(window.location.search);
@@ -62,23 +61,6 @@
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
   }
 
-  async function savePendingLead() {
-    const raw = localStorage.getItem(PENDING_KEY);
-    if (!raw) return;
-    try {
-      if (!REGISTER_ENDPOINT) throw new Error("Cadastro do evento ainda não habilitado.");
-      const response = await fetch(REGISTER_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: raw,
-        keepalive: true
-      });
-      if (response.ok || response.status === 409) localStorage.removeItem(PENDING_KEY);
-    } catch (error) {
-      console.warn("Lead pendente; nova tentativa será feita quando houver internet.", error);
-    }
-  }
-
   function submitHotspotLogin(credentials) {
     if (!hotspot.linkLogin || !credentials?.username || !credentials?.password) return false;
     let loginUrl;
@@ -105,7 +87,7 @@
       input.value = value;
       loginForm.appendChild(input);
     });
-    localStorage.setItem("b360-auth-started", String(Date.now()));
+    sessionStorage.setItem("b360-auth-started", String(Date.now()));
     document.body.appendChild(loginForm);
     loginForm.submit();
     return true;
@@ -150,17 +132,27 @@
       if (!response.ok || !data.ok) throw new Error("register_failed");
 
       if (data.awaiting_activation || !data.hotspot_login) {
-        setMessage("Cadastro registrado! Estamos preparando a liberação automática do Wi-Fi.");
+        setMessage("Cadastro registrado! Aguarde a liberação de acesso pela equipe do evento.");
         return;
       }
       if (!hotspot.linkLogin) {
-        setMessage("Cadastro registrado! Conecte-se ao Wi-Fi Buteco 360 Clientes para concluir o acesso.");
+        setMessage("Cadastro registrado! Abra o portal conectado ao Wi-Fi Buteco 360 Clientes para ativar a internet.");
         return;
       }
-      setMessage("Cadastro confirmado. Liberando internet...");
-      if (!submitHotspotLogin(data.hotspot_login)) {
-        setMessage("Cadastro realizado, mas o endereço de autenticação do Wi-Fi está inválido. Procure a equipe do evento.", true);
+      pendingCredentials = data.hotspot_login;
+      accessCard?.classList.add("is-connected", "android-preauth");
+      connectedOffer?.setAttribute("aria-hidden", "false");
+      const kicker = connectedOffer?.querySelector(".connected-kicker");
+      const heading = connectedOffer?.querySelector("h2");
+      const copy = connectedOffer?.querySelector(".connected-copy");
+      if (kicker) kicker.textContent = "CADASTRO CONFIRMADO";
+      if (heading) heading.textContent = "Seu Wi-Fi está quase pronto.";
+      if (copy) copy.textContent = "Antes de navegar, conheça a Inove, que conecta o Buteco 360.";
+      if (androidConnect) {
+        androidConnect.disabled = false;
+        androidConnect.textContent = "Liberar meu acesso ao Wi-Fi →";
       }
+      window.scrollTo(0, 0);
     } catch (error) {
       console.error("Cadastro Buteco 360", error);
       setMessage("Não foi possível concluir o cadastro. Tente novamente.", true);
@@ -170,33 +162,36 @@
     }
   });
 
+  androidConnect?.addEventListener("click", () => {
+    if (!pendingCredentials) return;
+    androidConnect.disabled = true;
+    androidConnect.textContent = "Conectando ao Wi-Fi...";
+    if (!submitHotspotLogin(pendingCredentials)) {
+      androidConnect.disabled = false;
+      androidConnect.textContent = "Tentar liberar novamente →";
+    }
+  });
+
   async function handleConnectedReturn() {
     if (params.get("connected") !== "1") return;
-    const started=Number(localStorage.getItem("b360-auth-started") || "0");
+    const started=Number(sessionStorage.getItem("b360-auth-started") || "0");
     if (!started || Date.now()-started > 600000) return;
-    localStorage.removeItem("b360-auth-started");
+    sessionStorage.removeItem("b360-auth-started");
     if (androidConnect) androidConnect.style.display="none";
-    // O parâmetro da URL não comprova autenticação do Hotspot.
-    return;
-
-    let originalDestination = "";
-    try {
-      const pending = JSON.parse(localStorage.getItem(PENDING_KEY) || "null");
-      originalDestination = pending?.hotspot?.linkOrig || "";
-    } catch (error) {
-      console.warn("Não foi possível recuperar o destino original.", error);
-    }
-
-    if (continueBrowsing && originalDestination && /^https?:\/\//i.test(originalDestination)) {
-      continueBrowsing.href = originalDestination;
-    }
 
     form.style.display = "none";
     setMessage("");
     successToast?.classList.remove("show");
     successToast?.setAttribute("aria-hidden", "true");
     accessCard?.classList.add("is-connected");
+    accessCard?.classList.remove("android-preauth");
     connectedOffer?.setAttribute("aria-hidden", "false");
+    const kicker = connectedOffer?.querySelector(".connected-kicker");
+    const heading = connectedOffer?.querySelector("h2");
+    const copy = connectedOffer?.querySelector(".connected-copy");
+    if (kicker) kicker.textContent = "ACESSO AUTORIZADO";
+    if (heading) heading.textContent = "Pronto, boa navegação!";
+    if (copy) copy.textContent = "Aproveite o Wi-Fi do Buteco 360. Sua conexão foi autorizada.";
     showSuccess();
   }
 
