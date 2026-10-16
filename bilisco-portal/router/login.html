@@ -1,23 +1,29 @@
 <!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wi-Fi Buteco 360</title></head>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="0;url=https://buteco360.mystech.com.br/?mac=$(mac)&amp;ip=$(ip)&amp;link-login-only=$(link-login-only)">
+<title>Wi-Fi Buteco 360</title>
+<style>
+html,body{margin:0;min-height:100%;font:16px system-ui,-apple-system,sans-serif;background:#fffaf7;color:#312b29}
+main{min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:14px;padding:24px;box-sizing:border-box}
+a{color:#d75825;font-weight:700;text-decoration:none}
+p{margin:0;color:#635b57}
+</style>
+</head>
 <body>
-<p>Abrindo o cadastro do Wi-Fi Buteco 360...</p>
+<main>
+<p>Conectando ao Wi-Fi Buteco 360...</p>
 <a id="open" href="https://buteco360.mystech.com.br/">Abrir cadastro</a>
+</main>
 <script>
-(function () {
-  var url = new URL("https://buteco360.mystech.com.br/");
-  var params = {
-    "mac": "$(mac)",
-    "ip": "$(ip)",
-    "link-login-only": "$(link-login-only)"
-  };
-  Object.keys(params).forEach(function(key) {
-    var value = params[key];
-    if (value && value.indexOf("$(") !== 0) url.searchParams.set(key, value);
-  });
-  document.getElementById("open").href = url.href;
-  window.location.replace(url.href);
+(function(){
+var url="https://buteco360.mystech.com.br/?mac="+encodeURIComponent("$(mac)")+
+ "&ip="+encodeURIComponent("$(ip)")+
+ "&link-login-only="+encodeURIComponent("$(link-login-only)");
+document.getElementById("open").href=url;
+window.location.replace(url);
 })();
 </script>
 </body>
