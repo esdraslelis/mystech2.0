@@ -487,3 +487,52 @@ dialog::backdrop{background:rgba(20,20,22,.48);backdrop-filter:blur(4px)}
 /* Identidade oficial do parceiro Buteco 360° */
 .partner-logo.buteco360-logo{display:block;width:76px!important;height:auto!important;aspect-ratio:1/1;max-width:100%;object-fit:contain;object-position:center;opacity:1;background:none;flex-shrink:0;margin:2px auto 0}
 @media(max-width:700px){.partner-logo.buteco360-logo{width:72px!important;height:auto!important}}
+
+
+/* Buteco 360: inputs com no mínimo 16px impedem o zoom automático por foco no iOS. */
+@media (pointer:coarse) {
+  #access-form input:not([type="checkbox"]) {
+    font-size:16px !important;
+  }
+}
+
+/* Oferta apresentada antes de o sistema cativo autorizar a conexão. */
+.access-card.android-preauth .connected-offer {display:block}
+.access-card.android-preauth .android-connect {display:flex;min-height:48px}
+.access-card.android-preauth .continue-browsing {display:none}
+.access-card.android-preauth .connected-kicker {color:#bb4b24}
+.access-card.android-preauth .connected-check {background:#fff1e8;color:#cf5727}
+.offer-card::after {content:""}
+.offer-headline {
+  position:relative;
+  z-index:1;
+  display:block;
+  margin-top:12px;
+  font-size:clamp(22px,4.4vw,30px);
+  font-weight:850;
+  letter-spacing:-.04em;
+  line-height:1.12;
+}
+.offer-description {
+  position:relative;
+  z-index:1;
+  margin:10px 0 0;
+  max-width:390px;
+  font-size:13px;
+  line-height:1.45;
+  color:rgba(255,255,255,.92);
+}
+.offer-hint {
+  margin:9px auto 0;
+  font-size:11px;
+  line-height:1.45;
+  color:#77716f;
+}
+.access-card.android-preauth .offer-hint {display:block}
+.access-card.is-connected:not(.android-preauth) .offer-hint {display:none}
+@media(max-width:560px) {
+  .offer-headline{font-size:24px}
+  .offer-description{font-size:12px}
+  .offer-hint{font-size:10px}
+  .access-card.android-preauth .android-connect{height:48px;font-size:13px}
+}
