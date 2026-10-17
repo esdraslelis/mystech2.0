@@ -139,7 +139,7 @@
       input.value = value;
       loginForm.appendChild(input);
     });
-    sessionStorage.setItem("b360-auth-started", String(Date.now()));
+    try { sessionStorage.setItem("b360-auth-started", String(Date.now())); } catch (_) {}
     document.body.appendChild(loginForm);
     loginForm.submit();
     return true;
@@ -216,9 +216,10 @@
 
   async function handleConnectedReturn() {
     if (params.get("connected") !== "1") return;
-    const started=Number(sessionStorage.getItem("b360-auth-started") || "0");
-    if (!started || Date.now()-started > 600000) return;
-    sessionStorage.removeItem("b360-auth-started");
+    let started = 0;
+    try { started = Number(sessionStorage.getItem("b360-auth-started") || "0"); } catch (_) { return; }
+    if (!started || Date.now() - started > 600000) return;
+    try { sessionStorage.removeItem("b360-auth-started"); } catch (_) {}
     clearPendingAccess();
     if (androidConnect) androidConnect.style.display="none";
 
