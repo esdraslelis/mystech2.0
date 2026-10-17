@@ -307,8 +307,8 @@
     if (credentials) attemptLogin(credentials);
   });
 
-  var termsHtml = "<p>O Wi-Fi do evento é destinado aos visitantes. Utilize a conexão de forma lícita e responsável.</p><p>O acesso poderá ser limitado por manutenção, segurança ou uso abusivo.</p>";
-  var privacyHtml = "<p>Para solicitar acesso, você informa nome, sobrenome e celular. Esses dados são utilizados para controle de acesso e relacionamento do evento, conforme a legislação aplicável.</p>";
+  var termsHtml = "<p>O acesso ao Wi-Fi do evento é destinado aos clientes e visitantes do estabelecimento. O usuário se compromete a utilizar a conexão de forma lícita, responsável e sem prejudicar a rede ou terceiros.</p><p>O acesso poderá ser limitado ou interrompido para manutenção, segurança, uso abusivo ou necessidade operacional.</p>";
+  var privacyHtml = "<p>Ao solicitar o acesso, você informa nome, sobrenome e celular. Esses dados podem ser utilizados para controle de acesso, segurança da rede e relacionamento do evento com seus clientes, conforme a legislação aplicável.</p><p>Os dados não devem ser expostos publicamente e devem ser protegidos pelos sistemas responsáveis pelo armazenamento.</p>";
   var links = document.querySelectorAll("[data-modal]");
   var i;
   for (i = 0; i < links.length; i += 1) {
