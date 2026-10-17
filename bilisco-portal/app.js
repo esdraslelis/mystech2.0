@@ -15,6 +15,58 @@
   const continueBrowsing = document.getElementById("continue-browsing");
   const androidConnect = document.getElementById("android-connect");
   let pendingCredentials = null;
+  const PENDING_KEY = "b360-pending-access";
+
+  function savePendingAccess(credentials) {
+    try {
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify({
+        at: Date.now(),
+        mac: hotspot.mac,
+        linkLogin: hotspot.linkLogin,
+        credentials
+      }));
+    } catch (_) {
+      // Navegadores cativos podem bloquear armazenamento; não impedir o acesso.
+    }
+  }
+
+  function clearPendingAccess() {
+    try { sessionStorage.removeItem(PENDING_KEY); } catch (_) {}
+  }
+
+  function showPendingAccess(credentials) {
+    pendingCredentials = credentials;
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    accessCard?.classList.add("is-connected", "android-preauth");
+    connectedOffer?.setAttribute("aria-hidden", "false");
+    const kicker = connectedOffer?.querySelector(".connected-kicker");
+    const heading = connectedOffer?.querySelector("h2");
+    const copy = connectedOffer?.querySelector(".connected-copy");
+    if (kicker) kicker.textContent = "CADASTRO CONFIRMADO";
+    if (heading) heading.textContent = "Seu Wi-Fi está quase pronto.";
+    if (copy) copy.textContent = "Cadastro salvo! Toque abaixo para autorizar este aparelho na rede do evento.";
+    if (androidConnect) {
+      androidConnect.disabled = false;
+      androidConnect.textContent = "Liberar meu acesso ao Wi-Fi →";
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function restorePendingAccess() {
+    if (params.get("connected") === "1") return;
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(PENDING_KEY) || "null");
+      if (!saved || !saved.at || Date.now() - saved.at > 15 * 60 * 1000) {
+        clearPendingAccess();
+        return;
+      }
+      if (hotspot.mac && saved.mac && hotspot.mac.toLowerCase() !== saved.mac.toLowerCase()) return;
+      if (!hotspot.linkLogin && saved.linkLogin) hotspot.linkLogin = saved.linkLogin;
+      if (saved.credentials?.username && saved.credentials?.password) {
+        showPendingAccess(saved.credentials);
+      }
+    } catch (_) { clearPendingAccess(); }
+  }
 
   const REGISTER_ENDPOINT = "https://ilccoqqhgrsqgbglyiha.supabase.co/functions/v1/buteco360-register";
   const VALID_DDDS = new Set(["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"]);
@@ -67,7 +119,7 @@
     try {
       loginUrl = new URL(hotspot.linkLogin);
       if (!["http:", "https:"].includes(loginUrl.protocol) ||
-          !["login.buteco360.mystech.com.br", "login.buteco360.local", "10.77.0.1"].includes(loginUrl.hostname) ||
+          !["login.buteco360.mystech.com.br", "login.buteco360.local", "10.77.0.1", "10.77.7.1"].includes(loginUrl.hostname) ||
           !loginUrl.pathname.endsWith("/login")) return false;
     } catch { return false; }
 
@@ -135,25 +187,12 @@
         setMessage("Cadastro registrado! Aguarde a liberação de acesso pela equipe do evento.");
         return;
       }
+      savePendingAccess(data.hotspot_login);
+      showPendingAccess(data.hotspot_login);
       if (!hotspot.linkLogin) {
-        setMessage("Cadastro registrado! Abra o portal conectado ao Wi-Fi Buteco 360 Clientes para ativar a internet.");
-        return;
+        const copy = connectedOffer?.querySelector(".connected-copy");
+        if (copy) copy.textContent = "Seu cadastro foi salvo, mas o roteador não enviou o link de autenticação. Desconecte e conecte novamente no Wi-Fi do Buteco 360 para continuar.";
       }
-      pendingCredentials = data.hotspot_login;
-      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-      accessCard?.classList.add("is-connected", "android-preauth");
-      connectedOffer?.setAttribute("aria-hidden", "false");
-      const kicker = connectedOffer?.querySelector(".connected-kicker");
-      const heading = connectedOffer?.querySelector("h2");
-      const copy = connectedOffer?.querySelector(".connected-copy");
-      if (kicker) kicker.textContent = "CADASTRO CONFIRMADO";
-      if (heading) heading.textContent = "Seu Wi-Fi está quase pronto.";
-      if (copy) copy.textContent = "Antes de navegar, conheça a Inove, que conecta o Buteco 360.";
-      if (androidConnect) {
-        androidConnect.disabled = false;
-        androidConnect.textContent = "Liberar meu acesso ao Wi-Fi →";
-      }
-      window.scrollTo(0, 0);
     } catch (error) {
       console.error("Cadastro Buteco 360", error);
       setMessage("Não foi possível concluir o cadastro. Tente novamente.", true);
@@ -170,6 +209,8 @@
     if (!submitHotspotLogin(pendingCredentials)) {
       androidConnect.disabled = false;
       androidConnect.textContent = "Tentar liberar novamente →";
+      const copy = connectedOffer?.querySelector(".connected-copy");
+      if (copy) copy.textContent = "Não consegui abrir o login do MikroTik. Reconecte-se ao Wi-Fi do evento e tente novamente; seu cadastro já está salvo.";
     }
   });
 
@@ -178,6 +219,7 @@
     const started=Number(sessionStorage.getItem("b360-auth-started") || "0");
     if (!started || Date.now()-started > 600000) return;
     sessionStorage.removeItem("b360-auth-started");
+    clearPendingAccess();
     if (androidConnect) androidConnect.style.display="none";
 
     form.style.display = "none";
@@ -198,4 +240,5 @@
 
 
   handleConnectedReturn();
+  restorePendingAccess();
 })();
