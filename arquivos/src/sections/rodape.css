@@ -1,0 +1,78 @@
+/* Rodapé: rosa, com os links grandes em cobalto, o logo e os créditos, e o fecho "SUA IDEIA / NO AR / COM A NUBO" de
+   margem a margem; uma pessoa do time espia por trás das letras. */
+.rodape {
+  position: relative;
+  z-index: 1;
+  overflow: clip;
+  background: var(--c4-fundo);
+  color: var(--escuro);
+  padding: 36px var(--m) 0;
+}
+.rodape__links { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; }
+.rodape__link {
+  font-family: var(--titulo);
+  font-size: clamp(26px, calc(44 * var(--su)), 44px);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--titulo-cor);
+  padding: 9px 0;
+  margin: -9px 0;
+  transition: color 0.2s, transform 0.4s var(--curva-mola);
+}
+@media (hover: hover) { html:not(.is-scrolling) .rodape__link:hover { color: var(--cta); transform: translateY(-3px) rotate(-2deg); } }
+.rodape__link:active { transform: scale(0.96); }
+
+.rodape__info { display: grid; justify-items: start; gap: 14px; margin-top: 30px; }
+.rodape__logo {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--titulo-cor);
+  color: var(--claro);
+  transition: transform 0.45s var(--curva-mola);
+}
+.rodape__logo .marca { width: 36px; height: 36px; fill: currentColor; translate: 1px 1px; }
+@media (hover: hover) { .rodape__logo:hover { transform: rotate(-10deg) scale(1.06); } }
+.rodape__legal { font-size: 14px; line-height: 1.5; font-stretch: 75%; }
+.rodape__mini { background: linear-gradient(currentColor, currentColor) 0 100% / 0 1.5px no-repeat; transition: background-size 0.35s var(--curva); }
+@media (hover: hover) { .rodape__mini:hover { background-size: 100% 1.5px; } }
+.rodape__redes { display: flex; gap: 6px; margin-left: -8px; }
+.rodape__rede {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--escuro);
+  transition: background-color 0.2s, color 0.2s, transform 0.35s var(--curva-mola);
+}
+.rodape__rede svg { width: 20px; height: 20px; }
+@media (hover: hover) { .rodape__rede:hover { background: var(--escuro); color: var(--c4-fundo); transform: translateY(-2px); } }
+.rodape__rede:active { transform: scale(0.9); }
+
+.rodape__fecho { position: relative; margin-top: clamp(120px, calc(230 * var(--su)), 240px); padding-bottom: 12px; }
+.rodape__nome { position: relative; z-index: 1; color: var(--titulo-cor); line-height: 0.7; padding-bottom: 0.04em; }
+.rodape__nome .linha:nth-child(1) { --fs: calc((100vw - 2 * var(--m)) * 0.132); }
+.rodape__nome .linha:nth-child(2) { --fs: calc((100vw - 2 * var(--m)) * 0.19); translate: 0 -0.035em; }
+/* a pessoa fica atrás das letras: a cabeça passa por cima da primeira linha */
+.rodape__pessoa {
+  position: absolute;
+  z-index: 0;
+  right: 8%;
+  bottom: 52%;
+  width: clamp(190px, 25vw, 400px);
+  height: auto;
+  /* o corpo some antes da borda de baixo do recorte (que apareceria entre as letras) */
+  -webkit-mask-image: linear-gradient(#000 58%, transparent 86%);
+  mask-image: linear-gradient(#000 58%, transparent 86%);
+}
+
+@media (max-width: 760px) {
+  .rodape { padding-top: 28px; }
+  .rodape__links { justify-content: flex-start; gap: 10px 20px; }
+  .rodape__link { font-size: 26px; }
+  .rodape__fecho { margin-top: 150px; }
+  .rodape__pessoa { right: 4%; bottom: 50%; width: 48vw; }
+}

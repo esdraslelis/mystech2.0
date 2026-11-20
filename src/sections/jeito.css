@@ -1,0 +1,149 @@
+/* Nosso jeito: o título entra no creme e, presa à rolagem, a faixa anda de lado: a frase de abertura e quatro painéis
+   de tela cheia, cada um com uma cor da marca, uma frase em escada e uma forma (cápsula, a nuvem recortada com o
+   time, círculo, cápsula). O motion/jeito.js prende a seção e leva a rolagem vertical para o lado. */
+.jeito { position: relative; z-index: 1; background: var(--fundo); }
+.jeito__palco { position: relative; height: 100svh; overflow: clip; }
+.jeito__trilho { position: absolute; top: 0; left: 0; display: flex; height: 100%; will-change: transform; }
+
+.jeito__abre { flex: none; width: 100vw; height: 100%; display: grid; place-items: center; }
+.jeito__titulo { width: calc(720 * var(--u)); color: var(--titulo-cor); }
+.jeito__titulo .linha:nth-child(1) { --fs: calc(720 * var(--u) * 0.42); }
+.jeito__titulo .linha:nth-child(2) { --fs: calc(720 * var(--u) * 0.44); }
+.jeito__titulo .linha:nth-child(2) { translate: 0 -0.03em; }
+
+.jeito__entrada { flex: none; width: 72vw; height: 100%; display: grid; place-items: center; }
+.jeito__frase {
+  color: var(--apoio);
+  font-family: var(--titulo);
+  font-weight: var(--titulo-peso);
+  font-size: calc(46 * var(--u));
+  line-height: 1.02;
+  text-align: center;
+}
+
+.painel {
+  --p-fundo: var(--fundo);
+  --p-texto: var(--titulo-cor);
+  --p-forma: var(--claro);
+  position: relative;
+  flex: none;
+  width: 100vw;
+  height: 100%;
+  overflow: clip;
+  background: var(--p-fundo);
+}
+.painel--1 { --p-fundo: var(--selo-fundo); --p-texto: var(--titulo-cor); --p-forma: var(--claro); }
+.painel--2 { --p-fundo: var(--cta); --p-texto: var(--claro); }
+.painel--3 { --p-fundo: var(--c4-fundo); --p-texto: var(--titulo-cor); --p-forma: var(--claro); }
+.painel--4 { --p-fundo: var(--fundo); --p-texto: var(--cta); --p-forma: var(--selo-fundo); }
+
+/* a frase em escada: cada par de linhas um degrau mais para dentro */
+.painel__texto {
+  position: absolute;
+  z-index: 2;
+  left: calc(118 * var(--u));
+  top: calc(50% - 150 * var(--u));
+  color: var(--p-texto);
+  font-size: calc(72 * var(--u));
+  line-height: 0.8;
+}
+.painel__par { display: block; }
+.painel__par + .painel__par { margin-left: calc(96 * var(--u)); margin-top: calc(14 * var(--u)); }
+.painel--2 .painel__par + .painel__par { margin-left: calc(var(--degrau-n, 1) * 96 * var(--u)); }
+.painel--2 .painel__par:nth-child(3) { --degrau-n: 2; }
+
+/* cápsula: a pessoa dentro, recortada pela forma; desce além do pé do painel (o recorte é do painel) */
+.painel__capsula {
+  position: absolute;
+  right: calc(96 * var(--u));
+  top: calc(84 * var(--u));
+  bottom: calc(-220 * var(--u));
+  width: calc(470 * var(--u));
+  border-radius: 999px;
+  background: var(--p-forma);
+  overflow: hidden;
+}
+.painel__foto {
+  position: absolute;
+  left: 50%;
+  bottom: calc(220 * var(--u) - 40 * var(--u));
+  width: 118%;
+  max-width: none;
+  translate: -50% 0;
+}
+.painel--4 .painel__capsula { top: calc(96 * var(--u)); bottom: calc(96 * var(--u)); width: calc(430 * var(--u)); right: calc(110 * var(--u)); }
+.painel--4 .painel__foto { bottom: calc(-60 * var(--u)); width: 122%; }
+
+/* a nuvem da marca, recortando a foto do time (as bolinhas apontam para a frase) */
+.painel__nuvem {
+  position: absolute;
+  z-index: 1;
+  right: calc(70 * var(--u));
+  top: calc(50% - 330 * var(--u));
+  width: calc(700 * var(--u));
+  height: auto;
+  overflow: visible;
+}
+
+/* círculo grande atrás e a pessoa recortada na frente (a cabeça passa da borda do círculo) */
+.painel__circulo {
+  position: absolute;
+  right: calc(-150 * var(--u));
+  top: calc(50% - 300 * var(--u));
+  width: calc(940 * var(--u));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--p-forma);
+}
+.painel__recorte {
+  position: absolute;
+  z-index: 1;
+  right: calc(120 * var(--u));
+  bottom: 0;
+  height: calc(820 * var(--u));
+  width: auto;
+  max-width: none;
+}
+
+@media (max-width: 760px) {
+  .jeito__titulo { width: calc(330 * var(--u)); }
+  .jeito__titulo .linha:nth-child(1), .jeito__titulo .linha:nth-child(2) { --fs: calc(330 * var(--u) * 0.43); }
+  .jeito__entrada { width: 100vw; padding: 0 var(--m); }
+  .jeito__frase { font-size: calc(30 * var(--u)); }
+  .jeito__frase .linha { white-space: normal; }
+  .painel__texto { left: var(--m); top: calc(104 * var(--u)); font-size: calc(46 * var(--u)); }
+  .painel__par + .painel__par { margin-left: calc(44 * var(--u)); margin-top: calc(8 * var(--u)); }
+  .painel--2 .painel__par + .painel__par { margin-left: calc(var(--degrau-n, 1) * 44 * var(--u)); }
+  .painel__capsula { right: calc(30 * var(--u)); left: calc(30 * var(--u)); width: auto; top: calc(330 * var(--u)); bottom: calc(-200 * var(--u)); }
+  .painel__foto { width: 100%; bottom: calc(200 * var(--u) - 30 * var(--u)); }
+  .painel--4 .painel__capsula { top: calc(320 * var(--u)); bottom: calc(40 * var(--u)); left: calc(40 * var(--u)); right: calc(40 * var(--u)); width: auto; }
+  .painel--4 .painel__foto { width: 112%; bottom: calc(-40 * var(--u)); }
+  .painel__nuvem { right: calc(-20 * var(--u)); top: auto; bottom: calc(40 * var(--u)); width: calc(400 * var(--u)); }
+  .painel__circulo { right: calc(-120 * var(--u)); top: auto; bottom: calc(-160 * var(--u)); width: calc(560 * var(--u)); }
+  .painel__recorte { right: 50%; translate: 50% 0; height: calc(480 * var(--u)); }
+}
+/* no painel do time as bolinhas são da cor da frase: o pensamento sai dela */
+.painel__bolinhas { fill: var(--p-texto); }
+
+/* o aviãozinho: o mesmo avião de papel do balão do topo, voando junto com a faixa (motion/jeito.js). Voa numa linha
+   presa ao pé da tela, sob as frases e à esquerda das fotos: ali só passam roupas e fundos, nunca rostos nem letras.
+   No alto, a cabeça do rapaz do painel 3 passaria por baixo dele; presa ao meio, a linha cairia no rosto dele numa
+   tela alta, e no celular de tela baixa (iPhone com as barras) a fresta entre a frase e a foto não cabe o avião e
+   encosta no título. Fica fora da tela até a faixa andar */
+.jeito__aviao {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  top: calc(100% - 150 * var(--u));
+  width: calc(200 * var(--u));
+  height: auto;
+  margin-top: calc(-45 * var(--u));
+  max-width: none;
+  pointer-events: none;
+  transform: translate3d(-130%, 0, 0);
+  will-change: transform;
+  filter: drop-shadow(0 calc(16 * var(--u)) calc(12 * var(--u)) rgb(16 26 74 / 0.16));
+}
+@media (max-width: 760px) {
+  .jeito__aviao { top: calc(100% - 52 * var(--u)); width: calc(86 * var(--u)); margin-top: calc(-19.5 * var(--u)); }
+}

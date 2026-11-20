@@ -1,0 +1,14 @@
+/* Folha única do site, ligada no <head> do index.html, que segura a primeira pintura até ela chegar (importada pelo
+   JS, no dev do Vite ela só entrava depois dos módulos e a página aparecia crua por um instante). */
+@import '@fontsource-variable/bricolage-grotesque/standard.css';
+@import '@fontsource/lilita-one/latin.css';
+@import '@fontsource/lilita-one/latin-ext.css';
+@import './tokens.css';
+@import './base.css';
+@import '../sections/nav.css';
+@import '../sections/hero.css';
+@import '../sections/servicos.css';
+@import '../sections/jeito.css';
+@import '../sections/estudio.css';
+@import '../sections/contato.css';
+@import '../sections/rodape.css';

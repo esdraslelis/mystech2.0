@@ -1,0 +1,100 @@
+/* Serviços: a seção verde que sobe por cima do filme. "SERVIÇOS" gigante em rosa de margem a margem e, presos à
+   rolagem, os quatro cards sobem um por vez e empilham no miolo da palavra (o S do fim fica de fora, como numa
+   etiqueta colada por cima). No fim a seção sai pelo alto com os cantos de baixo redondos. */
+.servicos {
+  position: relative;
+  z-index: 2;
+  margin-top: -100svh; /* cobre a última tela do hero (o filme fica parado embaixo) */
+  height: 250svh;
+}
+.servicos__palco {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
+  background: var(--secao);
+  border-radius: 0 0 calc(44 * var(--u)) calc(44 * var(--u));
+  --cw: calc(408 * var(--u)); /* largura do card */
+}
+.servicos__titulo {
+  position: absolute;
+  left: var(--m);
+  right: var(--m);
+  top: calc(50% - 196 * var(--u));
+  color: var(--secao-titulo);
+}
+.servicos__titulo .linha { --fs: calc(var(--cw) * 0.66); }
+.servicos__texto {
+  position: absolute;
+  left: var(--m);
+  top: calc(50% + 112 * var(--u));
+  color: var(--secao-texto);
+  font-weight: 500;
+  font-stretch: 75%;
+  font-variation-settings: 'opsz' 24;
+  font-size: calc(25 * var(--u));
+  line-height: 1.12;
+}
+
+.cards {
+  position: absolute;
+  left: calc(50% + 4 * var(--u));
+  top: calc(50% - 262 * var(--u));
+  width: var(--cw);
+  height: calc(536 * var(--u));
+  margin: 0;
+}
+.card { position: absolute; inset: 0; will-change: transform; }
+.card__link {
+  position: absolute;
+  inset: 0;
+  display: block;
+  padding: calc(30 * var(--u)) calc(30 * var(--u)) 0;
+  border-radius: calc(26 * var(--u));
+  background: var(--bg);
+  color: var(--txt);
+  box-shadow: 0 calc(3 * var(--u)) calc(18 * var(--u)) rgb(12 30 20 / 0.16);
+  transition: transform 0.45s var(--curva-mola);
+}
+.card--1 { --bg: var(--c1-fundo); --tit: var(--c1-titulo); --txt: var(--c1-texto); --seta: var(--c1-titulo); }
+.card--2 { --bg: var(--c2-fundo); --tit: var(--c2-titulo); --txt: var(--c2-texto); --seta: var(--c2-titulo); }
+.card--3 { --bg: var(--c3-fundo); --tit: var(--c3-titulo); --txt: var(--c3-texto); --seta: var(--c3-titulo); }
+.card--4 { --bg: var(--c4-fundo); --tit: var(--c4-titulo); --txt: var(--c4-texto); --seta: var(--c4-titulo); }
+.card__titulo { color: var(--tit); width: 100%; }
+.card__titulo .linha:nth-child(1) { --fs: calc(var(--cw) * 0.2); }
+.card__titulo .linha:nth-child(2) { --fs: calc(var(--cw) * 0.2); }
+.card__texto {
+  margin-top: calc(20 * var(--u));
+  max-width: calc(330 * var(--u));
+  font-weight: 500;
+  font-stretch: 75%;
+  font-variation-settings: 'opsz' 24;
+  font-size: calc(23 * var(--u));
+  line-height: 1.12;
+}
+.card__seta {
+  position: absolute;
+  left: calc(30 * var(--u));
+  bottom: calc(30 * var(--u));
+  width: calc(84 * var(--u));
+  height: auto;
+  color: var(--seta);
+  transition: transform 0.45s var(--curva-mola);
+}
+@media (hover: hover) {
+  html:not(.is-scrolling) .card__link:hover { transform: translateY(calc(-10 * var(--u))) rotate(-1.5deg); }
+  html:not(.is-scrolling) .card__link:hover .card__seta { transform: translateX(calc(14 * var(--u))); }
+}
+.card__link:active { transform: scale(0.98); transition-duration: 0.1s; }
+.card__link:focus-visible { outline: 3px solid var(--secao-texto); outline-offset: 4px; }
+
+@media (max-width: 760px) {
+  .servicos__palco { --cw: calc(300 * var(--u)); border-radius: 0 0 calc(28 * var(--u)) calc(28 * var(--u)); }
+  .servicos__titulo { top: calc(92 * var(--u)); }
+  .servicos__texto { top: calc(184 * var(--u)); right: var(--m); font-size: calc(17 * var(--u)); }
+  .servicos__texto .linha { white-space: normal; }
+  .cards { left: calc(50% - var(--cw) / 2); top: auto; bottom: calc(34 * var(--u)); height: calc(380 * var(--u)); }
+  .card__link { padding: calc(22 * var(--u)) calc(22 * var(--u)) 0; border-radius: calc(20 * var(--u)); }
+  .card__texto { font-size: calc(17 * var(--u)); max-width: none; }
+  .card__seta { width: calc(64 * var(--u)); left: calc(22 * var(--u)); bottom: calc(22 * var(--u)); }
+}

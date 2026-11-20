@@ -1,0 +1,156 @@
+/* Hero: o título à esquerda e o balão de pensamento à direita, com o céu e o avião de papel dentro. Na rolagem, o balão cresce até
+   cobrir a tela, a frase sobe deitada sobre o filme e a seção verde sobe por cima. O palco fica preso (sticky) pela
+   altura da seção: crescer (~0,85 tela) + frase (~1) + a seção verde subindo com o parágrafo (1 tela). */
+.hero {
+  position: relative;
+  height: 400svh;
+  /* o comprimento do título e o tamanho da frase saem destas medidas (motion/justifica.js ajusta cada linha) */
+  --tw: calc(452 * var(--u));
+}
+.hero__palco {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
+}
+
+/* o filme: tela cheia, recortado pela nuvem; o JS só desliza o filme de lado (ele não escala) */
+.hero__midia { position: absolute; inset: 0; z-index: 0; }
+.hero__filme { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; will-change: transform; }
+.hero__still, .hero__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* o zoom lento da foto só quando não há vídeo (com vídeo, a foto é o pôster e bate com o 1º quadro) */
+.hero__filme.sem-video .hero__still { animation: hero-respira 22s ease-in-out infinite alternate; transform-origin: 50% 60%; }
+/* o vídeo fica sempre por cima, mostrando o pôster (a mesma foto, que é o 1º quadro) até tocar, e anda a partir dele:
+   não há troca. Entrar em fusão por cima da foto parada fazia o céu, já andando, dar um pulo. Sem vídeo, some. */
+.hero__filme.sem-video .hero__video { visibility: hidden; }
+@keyframes hero-respira { from { transform: scale(1.02); } to { transform: scale(1.09) translateX(-1.5%); } }
+.hero__veu { position: absolute; inset: 0; opacity: 0; background: linear-gradient(180deg, rgb(12 34 92 / 0.34), rgb(12 34 92 / 0.58)); }
+
+/* a caixa da nuvem no hero (o contorno sem as bolinhas), com a proporção da nuvem: 1235 × 990 */
+.hero__nuvem {
+  position: absolute;
+  right: calc(44 * var(--u));
+  top: calc(92 * var(--u));
+  width: calc(836 * var(--u));
+  aspect-ratio: 1235 / 990;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.hero__texto {
+  position: absolute;
+  z-index: 2;
+  left: var(--m);
+  top: calc(178 * var(--u));
+  width: var(--tw);
+}
+.hero__titulo { color: var(--titulo-cor); line-height: 0.7; }
+/* vãos iguais e curtos entre as linhas (a Lilita sobra mais em cima das maiúsculas que embaixo), medidos na tinta.
+   translate e não margem: as margens negativas das máscaras se fundem e engolem o ajuste */
+.hero__titulo .linha:nth-child(2) { translate: 0 -0.034em; }
+.hero__titulo .linha:nth-child(3) { translate: 0 -0.045em; }
+/* tamanhos de partida (os do texto da demo); o justifica.js recalcula com a fonte carregada */
+.hero__titulo .linha:nth-child(1) { --fs: calc(var(--tw) * 0.2235); }
+.hero__titulo .linha:nth-child(2) { --fs: calc(var(--tw) * 0.5066); }
+.hero__titulo .linha:nth-child(3) { --fs: calc(var(--tw) * 0.1727); }
+
+.selo {
+  position: absolute;
+  z-index: 1;
+  left: calc(-44 * var(--u));
+  top: calc(-112 * var(--u));
+  display: grid;
+  place-items: center;
+  width: calc(128 * var(--u));
+  height: calc(128 * var(--u));
+  border-radius: 50%;
+  background: var(--selo-fundo);
+}
+.selo__t {
+  display: block;
+  rotate: -16deg;
+  color: var(--selo-cor);
+  font-family: var(--titulo);
+  font-weight: var(--titulo-peso);
+  font-stretch: var(--titulo-largura);
+  font-variation-settings: 'opsz' 96;
+  font-size: calc(56 * var(--u));
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  translate: calc(2 * var(--u)) calc(-2 * var(--u));
+}
+
+.hero__sub {
+  margin-top: calc(30 * var(--u));
+  color: var(--apoio);
+  font-weight: 600;
+  font-stretch: 75%;
+  font-variation-settings: 'opsz' 28;
+  font-size: calc(31 * var(--u));
+  line-height: 1.02;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+}
+.hero__sub-degrau { padding-left: calc(84 * var(--u)); }
+
+/* a frase em perspectiva (o JS põe o rotateX e a subida) */
+.hero__crawl {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  perspective: calc(980 * var(--u));
+  perspective-origin: 50% 18%;
+  pointer-events: none;
+  --cw: calc(940 * var(--u));
+}
+.crawl {
+  position: absolute;
+  left: calc(50% - var(--cw) / 2);
+  top: calc(50% - 330 * var(--u));
+  width: var(--cw);
+  color: var(--sobre-filme);
+  text-align: center;
+  transform-origin: 50% 100%;
+  visibility: hidden;
+}
+.crawl .linha:nth-child(1) { --fs: calc(var(--cw) * 0.334); }
+.crawl .linha:nth-child(2) { --fs: calc(var(--cw) * 0.2234); }
+.crawl .linha:nth-child(3) { --fs: calc(var(--cw) * 0.2793); }
+
+.hero__frase {
+  position: absolute;
+  z-index: 3;
+  left: calc(50% - 300 * var(--u));
+  top: calc(312 * var(--u));
+  width: calc(600 * var(--u));
+  color: var(--sobre-filme);
+  text-align: center;
+  font-weight: 600;
+  font-stretch: 75%;
+  font-variation-settings: 'opsz' 32;
+  font-size: calc(33 * var(--u));
+  line-height: 1.08;
+  visibility: hidden;
+}
+
+/* antes do JS (abertura): só o creme; o motion/abertura.js põe cada peça no estado inicial e mostra */
+.abertura:not(.abertura-viva) .hero__texto,
+.abertura:not(.abertura-viva) .hero__midia,
+.abertura:not(.abertura-viva) .nav { visibility: hidden; }
+
+@media (max-width: 760px) {
+  .hero { --tw: calc(252 * var(--u)); height: 400svh; }
+  /* a nav tem altura fixa em px e o --u encolhe com a tela baixa: no iPhone com as barras (375 × 553), 96u punha o
+     título colado na nav e o selo "OI!" (26u acima do título) escondido atrás dela */
+  .hero__texto { top: max(calc(96 * var(--u)), calc(78px + 26 * var(--u))); left: var(--m); }
+  .hero__nuvem { right: calc(18 * var(--u)); top: auto; bottom: calc(22 * var(--u)); width: calc(304 * var(--u)); }
+  .selo { width: calc(82 * var(--u)); height: calc(82 * var(--u)); left: auto; right: calc(-78 * var(--u)); top: calc(-26 * var(--u)); }
+  .selo__t { font-size: calc(36 * var(--u)); }
+  .hero__sub { font-size: calc(19 * var(--u)); margin-top: calc(14 * var(--u)); }
+  .hero__sub-degrau { padding-left: calc(48 * var(--u)); }
+  .hero__crawl { --cw: calc(350 * var(--u)); perspective: calc(700 * var(--u)); }
+  .crawl { top: calc(50% - 200 * var(--u)); }
+  .hero__frase { left: calc(50% - 170 * var(--u)); width: calc(340 * var(--u)); top: calc(250 * var(--u)); font-size: calc(22 * var(--u)); line-height: 1.12; }
+  .hero__frase .linha { white-space: normal; }
+}

@@ -1,0 +1,157 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: clip; overscroll-behavior-x: none; }
+html { -webkit-text-size-adjust: 100%; scrollbar-width: none; -webkit-tap-highlight-color: transparent; background: var(--pagina); }
+html::-webkit-scrollbar { display: none; }
+body {
+  margin: 0;
+  background: var(--pagina);
+  color: var(--tinta);
+  font-family: var(--fonte);
+  font-size: 17px;
+  line-height: 1.35;
+  font-weight: 500;
+  font-stretch: 75%;
+  font-variation-settings: 'opsz' 16;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+img, video, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+h1, h2, h3, p, figure, ul, ol { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+:focus-visible { outline: 3px solid var(--escuro); outline-offset: 3px; border-radius: 6px; }
+
+/* a letra grande da marca: Bricolage pesada, no tamanho óptico de título */
+.display, .titulo-fonte {
+  font-family: var(--titulo);
+  font-weight: var(--titulo-peso);
+  font-stretch: var(--titulo-largura);
+  font-variation-settings: 'opsz' 96;
+  letter-spacing: var(--titulo-esp);
+}
+.display { text-transform: uppercase; line-height: var(--titulo-lh); }
+.condensada {
+  font-weight: 600;
+  font-stretch: 75%;
+  font-variation-settings: 'opsz' 24;
+}
+
+/* linha com máscara: a palavra sobe de baixo para o lugar (motion/linhas.js). A folga em cima e embaixo deixa os
+   acentos e as pernas fora do corte; a margem negativa devolve o espaço, e as linhas continuam coladas. */
+.linha { display: block; overflow: clip; padding: 0.12em 0 0.2em; margin: -0.12em 0 -0.2em; white-space: nowrap; }
+.linha__t { display: inline-block; }
+
+/* bloco justificado (motion/justifica.js): cada linha ganha o tamanho que a faz ocupar a largura inteira do bloco */
+[data-justifica] .linha { font-size: var(--fs, 1em); }
+
+/* botão "adesivo": pílula com um degrau chapado embaixo; sobe no hover e afunda no clique */
+.botao {
+  --cor: var(--cta);
+  --sombra: var(--cta-sombra);
+  --txt: var(--claro);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--cor);
+  color: var(--txt);
+  box-shadow: 0 var(--degrau) 0 var(--sombra);
+  font-family: var(--titulo);
+  font-weight: var(--titulo-peso);
+  font-stretch: var(--titulo-largura);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: transform 0.35s var(--curva-mola), box-shadow 0.35s var(--curva-mola), background-color 0.25s;
+}
+.botao__txt { display: inline-block; transition: transform 0.45s var(--curva-mola); }
+@media (hover: hover) {
+  html:not(.is-scrolling) .botao:hover { transform: translateY(-2px); box-shadow: 0 calc(var(--degrau) + 2px) 0 var(--sombra); }
+  html:not(.is-scrolling) .botao:hover .botao__txt { transform: rotate(-3deg) scale(1.04); }
+}
+.botao:active { transform: translateY(var(--degrau)); box-shadow: 0 0 0 var(--sombra); transition-duration: 0.08s; }
+.botao:focus-visible { outline-color: var(--escuro); }
+
+/* barra de rolagem própria (motion/scrollbar.js) */
+.sbar { position: fixed; top: 6px; right: 3px; bottom: 6px; width: 10px; z-index: 60; pointer-events: none; }
+.sbar__thumb {
+  position: absolute; right: 0; width: 4px; border-radius: 4px; background: var(--escuro);
+  opacity: 0; transition: opacity 0.5s, width 0.25s var(--curva); pointer-events: auto; cursor: grab;
+}
+.sbar.is-on .sbar__thumb { opacity: 0.55; }
+.sbar.is-none { display: none; }
+.sbar.is-drag .sbar__thumb { cursor: grabbing; }
+@media (hover: hover) { .sbar__thumb:hover, .sbar.is-drag .sbar__thumb { width: 7px; opacity: 0.85; } }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation: none !important; }
+}
+
+/* cursor da marca (motion/cursor.js), só com mouse: a seta gorda com o degrau chapado dos botões */
+html.cursor-on, html.cursor-on * { cursor: none !important; }
+html.cursor-on :is(input, textarea, select) { cursor: text !important; }
+html.cursor-on :is(input[type='radio'], input[type='checkbox']) { cursor: none !important; }
+.cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  will-change: transform;
+}
+.cursor.is-on { opacity: 1; }
+.cursor.is-texto { opacity: 0; }
+.cursor__seta {
+  display: block;
+  width: 26px;
+  height: 32px;
+  margin: -3.2px 0 0 -3.5px; /* a ponta da seta no ponto do mouse */
+  overflow: visible;
+  fill: var(--titulo-cor);
+  stroke: var(--claro);
+  stroke-width: 3.4;
+  stroke-linejoin: round;
+  paint-order: stroke;
+  filter: drop-shadow(0 3px 0 var(--escuro));
+  transform-origin: 3.5px 3.2px;
+  transition: transform 0.35s var(--curva-mola), fill 0.2s, filter 0.12s;
+}
+.cursor.is-clicavel .cursor__seta { fill: var(--cta); transform: rotate(-12deg) scale(1.12); }
+.cursor.is-baixo .cursor__seta {
+  transform: translateY(3px) rotate(-12deg) scale(1.04);
+  filter: drop-shadow(0 0 0 var(--escuro));
+  transition-duration: 0.08s;
+}
+.cursor__rotulo {
+  position: absolute;
+  left: 20px;
+  top: 26px;
+  padding: 7px 12px 6px;
+  border-radius: 999px;
+  background: var(--cta);
+  color: var(--claro);
+  box-shadow: 0 3px 0 var(--cta-sombra);
+  font-family: var(--titulo);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: scale(0) rotate(-10deg);
+  transform-origin: 0 0;
+  transition: transform 0.4s var(--curva-mola), box-shadow 0.12s;
+}
+.cursor.is-rotulo .cursor__rotulo { transform: scale(1) rotate(-4deg); }
+.cursor.is-rotulo.is-baixo .cursor__rotulo { transform: translateY(3px) scale(0.97) rotate(-4deg); box-shadow: 0 0 0 var(--cta-sombra); transition-duration: 0.08s; }
+@media (prefers-reduced-motion: reduce) { .cursor, .cursor * { transition: none !important; } }
+

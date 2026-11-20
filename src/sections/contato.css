@@ -1,0 +1,160 @@
+/* Contato: o fecho em marinho. "FALA COM A GENTE" à esquerda e, à direita, o formulário em grade (células com fio
+   fino, rótulo em caixa alta no alto de cada uma), o serviço em pílulas e o botão adesivo. */
+.contato {
+  position: relative;
+  z-index: 1;
+  background: var(--escuro);
+  color: var(--claro);
+  padding: calc(120 * var(--su)) var(--m);
+}
+.contato__grade {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  grid-template-rows: auto 1fr;
+  column-gap: calc(64 * var(--su));
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.contato__titulo { color: var(--selo-fundo); font-size: calc(80 * var(--su)); line-height: 0.82; }
+.contato__titulo .linha:nth-child(2) { translate: 0 -0.03em; }
+.contato__apoio {
+  grid-column: 1;
+  margin-top: calc(28 * var(--su));
+  max-width: 330px;
+  color: color-mix(in srgb, var(--claro) 82%, transparent);
+  font-size: 18px;
+  line-height: 1.3;
+}
+.form {
+  --fio: color-mix(in srgb, var(--claro) 22%, transparent);
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  position: relative;
+  border-top: 1px solid var(--fio);
+}
+.form__cabeca {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--fio);
+  color: var(--cta);
+  font-family: var(--titulo);
+  font-size: 26px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.form__linha { display: grid; border-bottom: 1px solid var(--fio); }
+.form__linha--2 { grid-template-columns: 1fr 1fr; }
+.form__linha--2 > .campo + .campo { border-left: 1px solid var(--fio); }
+
+.campo {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 22px 12px;
+  border: 0;
+  margin: 0;
+  cursor: text;
+  transition: background-color 0.25s;
+}
+.campo__rotulo {
+  font-family: var(--titulo);
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--claro) 78%, transparent);
+  transition: color 0.2s;
+  padding: 0;
+}
+.campo__entrada {
+  width: 100%;
+  border: 0;
+  min-height: 40px;
+  padding: 6px 0;
+  background: none;
+  color: var(--claro);
+  font: 500 18px/1.35 var(--fonte);
+  font-stretch: 75%;
+  outline: none;
+  resize: none;
+}
+.campo__entrada::placeholder { color: color-mix(in srgb, var(--claro) 35%, transparent); }
+.campo__erro { min-height: 0; color: var(--cta); font-size: 13px; line-height: 1.2; }
+.campo__erro:empty { display: none; }
+@media (hover: hover) { .campo:hover { background: color-mix(in srgb, var(--claro) 4%, transparent); } }
+.campo:focus-within { background: color-mix(in srgb, var(--claro) 7%, transparent); }
+.campo:focus-within .campo__rotulo { color: var(--selo-fundo); }
+.campo.tem-erro .campo__rotulo { color: var(--cta); }
+.campo--msg { border-bottom: 1px solid var(--fio); }
+.campo--msg .campo__entrada { min-height: 104px; }
+
+.campo--servico { display: block; border-bottom: 1px solid var(--fio); cursor: default; }
+/* legenda como bloco comum (a padrão senta em cima do fio da borda) */
+.campo--servico > legend { float: left; width: 100%; margin-bottom: 4px; }
+.pilulas { clear: both; display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px; }
+.pilula { position: relative; cursor: pointer; }
+.pilula input { position: absolute; opacity: 0; pointer-events: none; }
+.pilula span {
+  display: inline-block;
+  padding: 9px 14px;
+  border: 1.5px solid color-mix(in srgb, var(--claro) 40%, transparent);
+  border-radius: 999px;
+  font-family: var(--titulo);
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--claro);
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.35s var(--curva-mola);
+}
+@media (hover: hover) { .pilula:hover span { border-color: var(--claro); transform: translateY(-2px); } }
+.pilula:active span { transform: scale(0.95); }
+.pilula input:checked + span { background: var(--selo-fundo); border-color: var(--selo-fundo); color: var(--escuro); }
+.pilula input:focus-visible + span { outline: 3px solid var(--selo-fundo); outline-offset: 3px; }
+
+.form__pe { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 22px 0; }
+.form__aviso { max-width: 300px; color: color-mix(in srgb, var(--claro) 62%, transparent); font-size: 13px; line-height: 1.35; }
+.form__enviar { flex: none; height: 50px; padding: 0 30px; font-size: 18px; }
+.form__enviar.is-enviando { pointer-events: none; opacity: 0.85; }
+.form .botao:focus-visible { outline-color: var(--selo-fundo); }
+
+.form__ok {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 14px;
+  padding: 0 22px;
+  background: var(--escuro);
+}
+.form__ok[hidden] { display: none; }
+.form__ok-titulo { color: var(--selo-fundo); font-size: 80px; }
+.form__ok-texto { max-width: 360px; font-size: 18px; line-height: 1.3; color: color-mix(in srgb, var(--claro) 85%, transparent); }
+.form__denovo {
+  margin-top: 8px;
+  font-family: var(--titulo);
+  font-size: 15px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--claro);
+  background: linear-gradient(currentColor, currentColor) 0 100% / 100% 2px no-repeat;
+  padding-bottom: 3px;
+  transition: background-size 0.35s var(--curva), color 0.2s;
+}
+@media (hover: hover) { .form__denovo:hover { color: var(--selo-fundo); background-size: 40% 2px; } }
+
+@media (max-width: 760px) {
+  .contato { padding: calc(84 * var(--su)) var(--m) calc(90 * var(--su)); }
+  .contato__grade { grid-template-columns: 1fr; grid-template-rows: auto; }
+  .contato__titulo { font-size: 46px; }
+  .contato__apoio { font-size: 16px; margin: 16px 0 30px; }
+  .form { grid-column: 1; grid-row: auto; }
+  .form__linha--2 { grid-template-columns: 1fr; }
+  .form__linha--2 > .campo + .campo { border-left: 0; border-top: 1px solid var(--fio); }
+  .campo { padding: 12px 14px 10px; }
+  .form__cabeca { padding: 14px; font-size: 22px; }
+  .form__pe { flex-direction: column; align-items: stretch; padding: 16px 0 0; }
+  .form__enviar { width: 100%; }
+}

@@ -1,0 +1,59 @@
+<section class="contato" id="contato" data-fecho aria-labelledby="contato-titulo">
+  <div class="contato__grade">
+    <h2 class="contato__titulo display" id="contato-titulo">
+      <span class="linha"><span class="linha__t">Fala com</span></span>
+      <span class="linha"><span class="linha__t">a gente</span></span>
+    </h2>
+    <p class="contato__apoio">Conta o que você quer tirar do papel. A gente responde em até um dia útil, com as perguntas certas e sem jargão.</p>
+
+    <form class="form" novalidate aria-labelledby="form-cabeca">
+      <p class="form__cabeca" id="form-cabeca">Conta sua ideia</p>
+      <div class="form__linha form__linha--2">
+        <label class="campo">
+          <span class="campo__rotulo">Nome</span>
+          <input class="campo__entrada" name="nome" autocomplete="given-name" required>
+          <span class="campo__erro" aria-live="polite"></span>
+        </label>
+        <label class="campo">
+          <span class="campo__rotulo">Sobrenome</span>
+          <input class="campo__entrada" name="sobrenome" autocomplete="family-name">
+        </label>
+      </div>
+      <div class="form__linha form__linha--2">
+        <label class="campo">
+          <span class="campo__rotulo">E-mail</span>
+          <input class="campo__entrada" name="email" type="email" autocomplete="email" inputmode="email" required>
+          <span class="campo__erro" aria-live="polite"></span>
+        </label>
+        <label class="campo">
+          <span class="campo__rotulo">WhatsApp</span>
+          <input class="campo__entrada" name="whatsapp" type="tel" autocomplete="tel" inputmode="tel" placeholder="(00) 00000-0000">
+        </label>
+      </div>
+      <fieldset class="campo campo--servico">
+        <legend class="campo__rotulo">O que você precisa</legend>
+        <div class="pilulas">
+          <label class="pilula"><input type="radio" name="servico" value="Sites e sistemas"><span>Sites e sistemas</span></label>
+          <label class="pilula"><input type="radio" name="servico" value="Apps"><span>Apps para celular</span></label>
+          <label class="pilula"><input type="radio" name="servico" value="Nuvem e integrações"><span>Nuvem e integrações</span></label>
+          <label class="pilula"><input type="radio" name="servico" value="Design de produto"><span>Design de produto</span></label>
+          <label class="pilula"><input type="radio" name="servico" value="Ainda não sei" checked><span>Ainda não sei</span></label>
+        </div>
+      </fieldset>
+      <label class="campo campo--msg">
+        <span class="campo__rotulo">Mensagem</span>
+        <textarea class="campo__entrada" name="mensagem" rows="4" required></textarea>
+        <span class="campo__erro" aria-live="polite"></span>
+      </label>
+      <div class="form__pe">
+        <p class="form__aviso">Ao enviar, você concorda que a Nubo use estes dados só para responder você.</p>
+        <button class="botao form__enviar" type="submit">Enviar</button>
+      </div>
+      <div class="form__ok" role="status" hidden>
+        <p class="form__ok-titulo display">Valeu!</p>
+        <p class="form__ok-texto">Sua ideia chegou. A gente responde em até um dia útil no e-mail que você deixou.</p>
+        <button class="form__denovo" type="button">Mandar outra</button>
+      </div>
+    </form>
+  </div>
+</section>

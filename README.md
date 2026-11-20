@@ -1,15 +1,7 @@
 # Mys Tech 2.0
 
-Site institucional e experiência cinematográfica da Mys Tech, construído com **Next.js**, React e animação sincronizada ao scroll.
-
-## Stack
-
-- Next.js (App Router)
-- React 19
-- GSAP
-- Three.js / React Three Fiber
-- Lenis
-- Sequência cinematográfica de 1500 frames empacotada em `public/media`
+Landing page em Vite sem framework (HTML, CSS e JS puros), com GSAP + ScrollTrigger e Lenis.
+Montada a partir do kit "Nubo" (pasta `arquivos/`); o guia do projeto está em `CLAUDE.md` / `AGENTS.md`.
 
 ## Desenvolvimento
 
@@ -18,21 +10,21 @@ npm install
 npm run dev
 ```
 
-Abra `http://localhost:3000`.
+`?pronto` no endereço abre sem a abertura animada.
 
 ## Produção
 
 ```bash
 npm run build
-npm start
 ```
 
-Requer Node.js 20.9 ou superior.
+Suba o conteúdo de `dist/` em qualquer hospedagem estática (Hostinger: dentro de `public_html/`). Funciona também numa subpasta.
 
-## Estrutura principal
+## Estrutura
 
-- `src/app/layout.jsx` — layout global e metadata
-- `src/app/page.jsx` — rota inicial
-- `src/App.jsx` — experiência principal
-- `src/styles.css` — estilos globais
-- `public/media` — mídia da experiência cinematográfica
+- `index.html` — `<head>` e a ordem das seções (`<!-- @secao nome -->`)
+- `src/sections/` — cada seção em `.html` + `.css`
+- `src/motion/` — os módulos de movimento
+- `src/styles/` — `site.css` (folha única), `tokens.css` (cores por papel), `base.css`
+- `public/` — vídeo, fotos e favicon
+- `arquivos/` — kit original (referência, prompts e scripts de imagem); não entra no site

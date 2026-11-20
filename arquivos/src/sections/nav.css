@@ -1,0 +1,161 @@
+/* Nav: a pílula creme presa no alto, com borda vinho e o degrau chapado embaixo (como um adesivo). */
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding-top: 12px;
+  pointer-events: none;
+}
+.nav__pilula {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(470px, calc(100vw - 24px));
+  height: 62px;
+  padding: 0 7px 0 7px;
+  border: 2px solid var(--escuro);
+  border-radius: 999px;
+  background: var(--claro);
+  box-shadow: 0 var(--degrau) 0 var(--escuro);
+  pointer-events: auto;
+}
+.nav__logo {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--titulo-cor);
+  color: var(--claro);
+  transition: transform 0.45s var(--curva-mola), background-color 0.25s;
+}
+.nav__logo .marca { width: 30px; height: 30px; fill: currentColor; transform: translate(1px, 1px); }
+@media (hover: hover) {
+  html:not(.is-scrolling) .nav__logo:hover { transform: rotate(-10deg) scale(1.06); }
+}
+.nav__logo:active { transform: scale(0.92); transition-duration: 0.08s; }
+.nav__nome {
+  flex: 1;
+  font-family: var(--titulo);
+  font-weight: var(--titulo-peso);
+  font-stretch: var(--titulo-largura);
+  font-variation-settings: 'opsz' 96;
+  font-size: 27px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--escuro);
+  transform: translateY(-1px);
+}
+.nav__cta { height: 44px; padding: 0 18px; font-size: 14px; }
+.nav__menu {
+  position: relative;
+  display: grid;
+  place-content: center;
+  gap: 4px;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border: 2px solid var(--escuro);
+  border-radius: 50%;
+  background: var(--claro);
+  transition: transform 0.4s var(--curva-mola), background-color 0.25s;
+}
+.nav__traco {
+  display: block;
+  width: 18px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--escuro);
+  transition: transform 0.45s var(--curva-mola), opacity 0.2s, background-color 0.25s;
+}
+@media (hover: hover) {
+  html:not(.is-scrolling) .nav__menu:not([aria-expanded='true']):hover { background: var(--hover-claro); transform: rotate(8deg); }
+  html:not(.is-scrolling) .nav__menu[aria-expanded='true']:hover { background: var(--escuro-2); transform: rotate(-8deg); }
+}
+.nav__menu:active { transform: scale(0.9); transition-duration: 0.08s; }
+.nav__menu[aria-expanded='true'] { background: var(--escuro); }
+.nav__menu[aria-expanded='true'] .nav__traco { background: var(--claro); }
+.nav__menu[aria-expanded='true'] .nav__traco:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav__menu[aria-expanded='true'] .nav__traco:nth-child(2) { opacity: 0; transform: scaleX(0.2); }
+.nav__menu[aria-expanded='true'] .nav__traco:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* menu: o cartão creme que cai da pílula, com os links, o logo grande e as redes */
+.menu {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: max(12px, calc(50vw - 235px));
+  width: 300px;
+  padding: 22px 22px 18px;
+  border: 2px solid var(--escuro);
+  border-radius: 24px;
+  background: var(--claro);
+  box-shadow: 0 5px 0 var(--escuro);
+  pointer-events: auto;
+  transform-origin: 88% -10px;
+}
+.menu[hidden] { display: block; visibility: hidden; opacity: 0; transform: scale(0.7) rotate(-4deg); pointer-events: none; }
+.menu:not([hidden]) { visibility: visible; }
+.menu { transition: opacity 0.25s var(--curva), transform 0.55s var(--curva-mola), visibility 0s; }
+.menu[hidden] { transition: opacity 0.2s var(--curva), transform 0.3s var(--curva), visibility 0s 0.3s; }
+.menu__links { display: grid; gap: 2px; }
+.menu__link {
+  justify-self: start;
+  font-family: var(--titulo);
+  font-weight: var(--titulo-peso);
+  font-stretch: var(--titulo-largura);
+  font-variation-settings: 'opsz' 96;
+  font-size: 36px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--apoio);
+  transition: color 0.2s, transform 0.4s var(--curva-mola);
+}
+@media (hover: hover) {
+  .menu__link:hover { color: var(--titulo-cor); transform: translateX(6px) rotate(-2deg); }
+}
+.menu__link:active { transform: scale(0.96); }
+.menu__marca {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 14px;
+  color: var(--titulo-cor);
+}
+.menu__marca .marca { width: 58px; height: 58px; fill: currentColor; }
+.menu__nome {
+  font-family: var(--titulo);
+  font-weight: var(--titulo-peso);
+  font-stretch: var(--titulo-largura);
+  font-variation-settings: 'opsz' 96;
+  font-size: 62px;
+  line-height: 0.8;
+}
+.menu__redes { display: flex; gap: 8px; }
+.menu__rede {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: var(--escuro);
+  transition: background-color 0.2s, color 0.2s, transform 0.35s var(--curva-mola);
+}
+.menu__rede svg { width: 20px; height: 20px; }
+@media (hover: hover) {
+  .menu__rede:hover { background: var(--escuro); color: var(--claro); transform: translateY(-2px); }
+}
+.menu__rede:active { transform: scale(0.9); }
+
+@media (max-width: 760px) {
+  .nav { padding-top: 10px; }
+  .nav__pilula { height: 56px; width: calc(100vw - 24px); gap: 8px; padding: 0 5px; }
+  .nav__logo, .nav__menu { width: 42px; height: 42px; }
+  .nav__logo .marca { width: 27px; height: 27px; }
+  .nav__nome { font-size: 23px; }
+  .nav__cta { height: 40px; padding: 0 14px; font-size: 13px; }
+  .menu { right: 12px; width: min(300px, calc(100vw - 24px)); }
+}

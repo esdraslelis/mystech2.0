@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Nubo · software house</title>
+  <meta name="description" content="Sites, sistemas e apps sob medida, feitos por um time que fala com você toda semana e só sossega com o produto rodando.">
+  <meta name="theme-color" content="#faf3e3">
+  <!-- prévia do link quando alguém compartilha (WhatsApp, redes): ao publicar, acrescente og:image e og:url com o
+       endereço completo do site (uma imagem 1200 × 630) -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="Nubo">
+  <meta property="og:title" content="Nubo · software house">
+  <meta property="og:description" content="Sites, sistemas e apps sob medida, feitos por um time que fala com você toda semana e só sossega com o produto rodando.">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <!-- primeira pintura: nunca a página crua. A abertura liga aqui, antes de qualquer arquivo; até o JS montar o estado
+       inicial, a tela é só o creme (o título espera escondido). Se o JS não subir em 4 s, a página aparece pronta. -->
+  <script>
+    (function () {
+      var r = document.documentElement;
+      r.classList.add('js');
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      var pronto = /[?&]pronto\b/.test(location.search) || matchMedia('(prefers-reduced-motion: reduce)').matches || location.hash.length > 1;
+      if (!pronto) {
+        r.classList.add('abertura');
+        setTimeout(function () { if (!window.__nubo) r.classList.remove('abertura'); }, 4000);
+      }
+    })();
+  </script>
+  <style>
+    html { background: #faf3e3; }
+    body { margin: 0; }
+    /* nada transiciona até a página assentar (senão peças com transição nascem visíveis e somem no 1º quadro) */
+    html:not(.assentou) *, html:not(.assentou) ::before, html:not(.assentou) ::after { transition: none !important; }
+    .abertura:not(.abertura-viva) .hero__texto, .abertura:not(.abertura-viva) .hero__midia, .abertura:not(.abertura-viva) .nav { visibility: hidden; }
+  </style>
+  <link rel="stylesheet" href="/src/styles/site.css">
+  <link rel="preload" as="image" href="./img/aviao.webp" fetchpriority="high">
+</head>
+<body>
+  <!-- @secao nav -->
+  <main>
+    <!-- @secao hero -->
+    <!-- @secao servicos -->
+    <!-- @secao jeito -->
+    <!-- @secao estudio -->
+    <!-- @secao contato -->
+  </main>
+  <!-- @secao rodape -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

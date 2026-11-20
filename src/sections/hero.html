@@ -1,0 +1,47 @@
+<section class="hero" id="topo" aria-label="Nubo, software house">
+  <div class="hero__palco">
+    <!-- o céu com o avião de papel, recortado pelo balão de pensamento (motion/hero.js desenha o clip-path a cada quadro) -->
+    <div class="hero__midia" aria-hidden="true">
+      <!-- data-foco: onde o avião está no quadro (x, y em fração); no hero ele pousa no miolo da nuvem -->
+      <div class="hero__filme" data-foco="0.31 0.44">
+        <img class="hero__still" src="./img/aviao.webp" alt="" width="1536" height="1024" fetchpriority="high" decoding="async">
+        <video class="hero__video" muted playsinline loop preload="none" poster="./img/aviao.webp">
+          <source data-src="./video/aviao.mp4" type="video/mp4">
+          <source data-src="./video/aviao.webm" type="video/webm">
+        </video>
+      </div>
+      <div class="hero__veu"></div>
+    </div>
+    <!-- a caixa onde a nuvem pousa no hero (medida pelo JS; não aparece) -->
+    <div class="hero__nuvem" aria-hidden="true"></div>
+
+    <div class="hero__texto">
+      <span class="selo" aria-hidden="true"><span class="selo__t">Oi!</span></span>
+      <h1 class="hero__titulo display" data-justifica>
+        <span class="linha"><span class="linha__t">A gente</span></span>
+        <span class="linha"><span class="linha__t">faz</span></span>
+        <span class="linha"><span class="linha__t">software</span></span>
+      </h1>
+      <p class="hero__sub">
+        <span class="linha"><span class="linha__t">Sites, sistemas e apps</span></span>
+        <span class="linha"><span class="linha__t">sob medida, do rabisco</span></span>
+        <span class="linha hero__sub-degrau"><span class="linha__t">ao produto no ar</span></span>
+      </p>
+    </div>
+
+    <!-- com o filme em tela cheia, a frase sobe deitada em perspectiva e some no alto -->
+    <div class="hero__crawl">
+      <h2 class="crawl display" data-justifica>
+        <span class="linha"><span class="linha__t">Nada</span></span>
+        <span class="linha"><span class="linha__t">fica no</span></span>
+        <span class="linha"><span class="linha__t">papel</span></span>
+      </h2>
+    </div>
+
+    <p class="hero__frase">
+      <span class="linha"><span class="linha__t">Design, código e nuvem num time só,</span></span>
+      <span class="linha"><span class="linha__t">que fala com você toda semana e só</span></span>
+      <span class="linha"><span class="linha__t">sossega com o produto rodando.</span></span>
+    </p>
+  </div>
+</section>

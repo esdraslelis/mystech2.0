@@ -1,0 +1,69 @@
+/* Estúdio: "ESTÚDIO" gigante de margem a margem e as fotos numa fila que passa das bordas, com cantos redondos e
+   larguras diferentes (deitadas e em pé). A fila rola de lado com o dedo, o trackpad ou as setas, e encaixa foto a
+   foto. */
+.estudio {
+  position: relative;
+  z-index: 1;
+  background: var(--fundo);
+  padding: calc(110 * var(--su)) 0 calc(120 * var(--su));
+}
+/* ~80% da largura: a seção inteira (título, fotos e setas) cabe numa tela */
+.estudio__titulo { width: min(80%, 1040px); margin: 0 auto; color: var(--cta); }
+.estudio__titulo .linha { --fs: calc(min(80vw, 1040px) * 0.215); }
+
+.estudio__fila {
+  margin-top: calc(30 * var(--su));
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--m);
+  scrollbar-width: none;
+  outline-offset: -3px;
+}
+.estudio__fila::-webkit-scrollbar { display: none; }
+.estudio__fila.is-arrastando { scroll-snap-type: none; user-select: none; }
+.estudio__fila img { -webkit-user-drag: none; user-select: none; }
+.estudio__faixa { display: flex; gap: calc(16 * var(--su)); padding: 0 var(--m); width: max-content; }
+.foto {
+  flex: none;
+  height: clamp(220px, 38vh, calc(380 * var(--su)));
+  border-radius: calc(24 * var(--su));
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: var(--claro);
+}
+.foto--deitada { aspect-ratio: 3 / 2; }
+.foto--em-pe { aspect-ratio: 2 / 3; }
+.foto img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--curva); }
+@media (hover: hover) {
+  html:not(.is-scrolling) .foto:hover img { transform: scale(1.04); }
+}
+
+.estudio__setas { display: flex; justify-content: center; gap: 14px; margin-top: calc(34 * var(--su)); }
+.seta {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 46px;
+  border-radius: 999px;
+  background: var(--cta);
+  color: var(--claro);
+  box-shadow: 0 var(--degrau) 0 var(--cta-sombra);
+  transition: transform 0.35s var(--curva-mola), box-shadow 0.35s var(--curva-mola), opacity 0.25s;
+}
+.seta svg { width: 26px; height: 16px; transition: transform 0.4s var(--curva-mola); }
+.seta--volta svg { rotate: 180deg; }
+@media (hover: hover) {
+  html:not(.is-scrolling) .seta:hover { transform: translateY(-2px); box-shadow: 0 calc(var(--degrau) + 2px) 0 var(--cta-sombra); }
+  html:not(.is-scrolling) .seta:hover svg { transform: translateX(3px); }
+  html:not(.is-scrolling) .seta--volta:hover svg { transform: translateX(-3px); }
+}
+.seta:active { transform: translateY(var(--degrau)); box-shadow: 0 0 0 var(--cta-sombra); transition-duration: 0.08s; }
+.seta:disabled { opacity: 0.35; cursor: default; transform: none; box-shadow: 0 var(--degrau) 0 var(--cta-sombra); }
+
+@media (max-width: 760px) {
+  .estudio { padding: calc(80 * var(--su)) 0 calc(90 * var(--su)); }
+  .estudio__titulo { width: calc(100% - 2 * var(--m)); }
+  .foto { height: 300px; border-radius: 18px; }
+  .estudio__faixa { gap: 10px; }
+}
