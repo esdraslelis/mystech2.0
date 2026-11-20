@@ -4,7 +4,20 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-const ENVIA = (dados) => new Promise((r) => setTimeout(() => r(dados), 900));
+// Mys Tech: o envio abre o WhatsApp com a mensagem montada (chamado no próprio clique, para o navegador não bloquear).
+const WHATSAPP = '5535997541933';
+const ENVIA = (d) => {
+  const nome = [d.nome, d.sobrenome].filter(Boolean).join(' ');
+  const texto = [
+    `Olá, Mys Tech! Sou ${nome}.`,
+    `Serviço: ${d.servico || 'Ainda não sei'}`,
+    `E-mail: ${d.email}` + (d.whatsapp ? ` · WhatsApp: ${d.whatsapp}` : ''),
+    '',
+    d.mensagem,
+  ].join('\n');
+  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`, '_blank', 'noopener');
+  return new Promise((r) => setTimeout(() => r(d), 600));
+};
 
 export function contato() {
   const secao = document.querySelector('.contato');
